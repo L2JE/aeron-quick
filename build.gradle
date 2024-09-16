@@ -1,0 +1,2 @@
+group = 'org.jetc.aeron'
+version = "$globalProjectVersion"

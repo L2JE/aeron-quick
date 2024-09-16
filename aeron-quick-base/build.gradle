@@ -1,0 +1,35 @@
+plugins {
+    id 'java-library'
+}
+
+java {
+    sourceCompatibility = "$globalJdkVersion"
+    toolchain { languageVersion = JavaLanguageVersion.of(globalJdkVersion) }
+    withJavadocJar()
+}
+version = "$globalProjectVersion"
+
+repositories {
+    mavenCentral()
+}
+
+tasks.named('test', Test){
+    useJUnitPlatform()
+    testLogging { events "passed", "skipped", "failed" }
+}
+
+tasks.named('jar', Jar){
+    manifest {
+        attributes(
+                'Implementation-Title'  : project.name,
+                'Implementation-Version': project.version,
+                'Implementation-Vendor' : globalPackageVendor
+        )
+    }
+}
+
+dependencies {
+    implementation libs.aeronClient
+    implementation libs.aeronDriver
+    testImplementation libs.junit
+}

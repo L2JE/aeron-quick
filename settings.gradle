@@ -1,0 +1,3 @@
+rootProject.name = 'aeron-quick'
+include 'aeron-quick-base',
+        'aeron-quick-samples'
