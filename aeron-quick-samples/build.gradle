@@ -15,9 +15,11 @@ String baseLibrary = 'aeron-quick-base'
 Project baseLibProject = project(":$baseLibrary")
 
 dependencies {
-    implementation files(baseLibProject.layout.buildDirectory.file("libs/${baseLibrary}-${globalProjectVersion}.jar").get().asFile)
+    implementation 'org.slf4j:slf4j-simple:2.0.16'
+    implementation 'org.slf4j:slf4j-api:2.0.16'
+    implementation files(baseLibProject.layout.buildDirectory.file("libs/${baseLibrary}-${globalProjectVersion}-fat.jar").get().asFile)
 }
 
 tasks.named('compileJava', JavaCompile){
-    dependsOn(":${baseLibrary}:assemble")
+    dependsOn(":${baseLibrary}:fatJar")
 }
