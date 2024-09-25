@@ -1,5 +1,6 @@
 plugins {
     id 'java-library'
+    id 'java'
 }
 
 java {
@@ -13,9 +14,21 @@ repositories {
     mavenCentral()
 }
 
+dependencies {
+    api libs.aeronClient
+    api libs.aeronDriver
+    api libs.jsonMapping
+    implementation 'org.slf4j:slf4j-api:2.0.16'
+    testImplementation libs.junit
+    testImplementation libs.junitEngine
+}
+
 tasks.named('test', Test){
     useJUnitPlatform()
-    testLogging { events "passed", "skipped", "failed" }
+}
+
+test.testLogging {
+    events "passed", "skipped", "failed"
 }
 
 tasks.named('jar', Jar){
@@ -28,8 +41,27 @@ tasks.named('jar', Jar){
     }
 }
 
-dependencies {
-    implementation libs.aeronClient
-    implementation libs.aeronDriver
-    testImplementation libs.junit
+tasks.register('fatJar', Jar){
+    println ":::::::::::::::::::::::::::::"
+    println JavaVersion.current()
+    println ":::::::::::::::::::::::::::::"
+    group = "fat"
+    manifest {
+        attributes(
+                'Implementation-Title'  : project.name,
+                'Implementation-Version': project.version,
+                'Implementation-Vendor' : globalPackageVendor
+        )
+    }
+    archiveClassifier.set("fat")
+    from(sourceSets.main.output)
+    duplicatesStrategy = DuplicatesStrategy.EXCLUDE
+    dependsOn configurations.runtimeClasspath
+
+    def runtimeLibs = []
+    configurations.runtimeClasspath.filter { it.name.endsWith("jar") }.forEach { runtimeLibs << zipTree(it) }
+
+    from({
+        runtimeLibs
+    })
 }
