@@ -1,7 +1,7 @@
 package org.jetc.aeron.quick.server;
 
 import org.jetc.aeron.quick.annotations.AeronQuickReceiver;
-import org.jetc.aeron.quick.server.precompile.ServerAdapterBase;
+import org.jetc.aeron.quick.server.precompile.ReceiverAdapterBase;
 
 import java.lang.reflect.InvocationTargetException;
 import java.util.Optional;
@@ -16,13 +16,13 @@ public class Adapters {
      * @param <T> Any class marked with {@link AeronQuickReceiver @AeronQuickServer}
      */
     @SuppressWarnings("unchecked")
-    public static <T> Optional<ServerAdapterBase<T>> adapt(T targetServer){
+    public static <T> Optional<ReceiverAdapterBase<T>> adapt(T targetServer){
         Class<T> serverClass = (Class<T>) targetServer.getClass();
 
         if(serverClass.getAnnotation(AeronQuickReceiver.class) != null) {
             try {
                 return Optional.of(
-                        (ServerAdapterBase<T>) Class.forName(serverClass.getCanonicalName() + ADAPTER_SUFFIX)
+                        (ReceiverAdapterBase<T>) Class.forName(serverClass.getCanonicalName() + ADAPTER_SUFFIX)
                                 .getDeclaredConstructor(serverClass)
                                 .newInstance(targetServer)
                 );
