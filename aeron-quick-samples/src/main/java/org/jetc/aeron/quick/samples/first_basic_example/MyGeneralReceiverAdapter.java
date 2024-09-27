@@ -1,5 +1,9 @@
 package org.jetc.aeron.quick.samples.first_basic_example;
 
+import org.jetc.aeron.quick.server.precompile.ReceiverAdapterBase;
+import org.jetc.aeron.quick.messaging.ReceiverBindingProvider;
+import org.jetc.aeron.quick.messaging.fragment_handling.ContextualHandler;
+import org.jetc.aeron.quick.messaging.subscription.SubscriptionMeta;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.aeron.Publication;
@@ -7,11 +11,6 @@ import io.aeron.logbuffer.Header;
 import org.agrona.DirectBuffer;
 import org.agrona.ExpandableDirectByteBuffer;
 import org.agrona.MutableDirectBuffer;
-import org.jetc.aeron.quick.messaging.ReceiverBindingProvider;
-import org.jetc.aeron.quick.messaging.fragment_handling.ContextualHandler;
-import org.jetc.aeron.quick.messaging.subscription.SubscriptionMeta;
-import org.jetc.aeron.quick.samples.general.AeronQuickGeneralServiceServer;
-import org.jetc.aeron.quick.server.precompile.ServerAdapterBase;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import java.nio.ByteOrder;
@@ -19,7 +18,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-public class MyGeneralReceiverAdapter implements ServerAdapterBase<MyGeneralReceiver> {
+public class MyGeneralReceiverAdapter implements ReceiverAdapterBase<MyGeneralReceiver> {
     public static final String GLOBAL_CHANNEL = "aeron:udp?endpoint=localhost:20121";
     public static final Integer PRICE_CHANGED_STREAM = 1;
     public static final Integer NOTIFY_OPERATION_STREAM = 2;
@@ -34,6 +33,18 @@ public class MyGeneralReceiverAdapter implements ServerAdapterBase<MyGeneralRece
             "aeron.quick.generalReceiver.duplicateNumber.stream", DUPLICATE_NUMBER_STREAM.toString()
     );
     private static final Logger log = LoggerFactory.getLogger(MyGeneralReceiverAdapter.class);
+    private record Binding(String methodName, int fragmentLimit, ContextualHandler handler){}
+    private final List<Binding> bindingsToCompute;
+    private static final String PROPS_SUFFIX = "aeron.quick.generalReceiver.";
+
+    private static String getPropForMethod(String method, String prop){
+        String value = System.getProperty(PROPS_SUFFIX + method + "." + prop);
+
+        if(value == null || value.isBlank())
+            value = System.getProperty(PROPS_SUFFIX + prop);
+
+        return value;
+    }
 
     @Override
     public ReceiverBindingProvider getBindings() {
@@ -41,20 +52,17 @@ public class MyGeneralReceiverAdapter implements ServerAdapterBase<MyGeneralRece
 
         for (Binding binding : this.bindingsToCompute){
             boolean isRepeatedBinding = computedBindings.setBinding(
-                    SYS_PROPS_MOCKUP.get(binding.propsPrefix() + ".channel"),
-                    Integer.parseInt(SYS_PROPS_MOCKUP.get(binding.propsPrefix() + ".stream")),
+                    getPropForMethod(binding.methodName() ,"channel"),
+                    Integer.parseInt(getPropForMethod(binding.methodName(), "stream")),
                     new SubscriptionMeta(binding.handler(), binding.fragmentLimit())
             ) != null;
 
             if(isRepeatedBinding)
-                throw new IllegalStateException("Only unique channel-stream pairs are allowed. Check properties for: %s".formatted(binding.propsPrefix()));
+                throw new IllegalStateException("Only unique channel-stream pairs are allowed. Check properties for: %s".formatted(PROPS_SUFFIX + binding.methodName()));
         }
 
         return computedBindings;
     }
-    private record Binding(String propsPrefix, int fragmentLimit, ContextualHandler handler){}
-
-    private final List<Binding> bindingsToCompute;
     private static final ObjectMapper mapper = new ObjectMapper();
 
     private static <T> T mapToObject(String content, Class<T> targetClass){
@@ -70,14 +78,14 @@ public class MyGeneralReceiverAdapter implements ServerAdapterBase<MyGeneralRece
         MutableDirectBuffer rspBuffer = new ExpandableDirectByteBuffer(256);
         bindingsToCompute = List.of(
             new Binding(
-                    "aeron.quick.generalReceiver.priceChanged",
+                    "priceChanged",
                     3,
                     aeron -> (DirectBuffer buffer, int offset, int length, Header header) -> {
                         server.priceChanged(buffer.getDouble(offset, ByteOrder.LITTLE_ENDIAN));
                     }
             ),
             new Binding(
-                    "aeron.quick.generalReceiver.notifyOperationDone",
+                    "notifyOperationDone",
                     3,
                     aeron -> (DirectBuffer buffer, int offset, int length, Header header) -> {
                         String content = buffer.getStringWithoutLengthUtf8(offset, length);
@@ -86,7 +94,7 @@ public class MyGeneralReceiverAdapter implements ServerAdapterBase<MyGeneralRece
                     }
             ),
             new Binding(
-                    "aeron.quick.generalReceiver.duplicateNumber",
+                    "duplicateNumber",
                     3,
                     aeron -> (DirectBuffer buffer, int offset, int length, Header header) -> {
                         long param1 = buffer.getLong(offset, ByteOrder.LITTLE_ENDIAN);

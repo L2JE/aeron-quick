@@ -7,7 +7,7 @@ import io.aeron.exceptions.AeronException;
 import org.agrona.CloseHelper;
 import org.jetc.aeron.quick.server.Adapters;
 import org.jetc.aeron.quick.server.AeronQuickReceiverBuilder;
-import org.jetc.aeron.quick.server.precompile.ServerAdapterBase;
+import org.jetc.aeron.quick.server.precompile.ReceiverAdapterBase;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import java.util.Optional;
@@ -58,7 +58,7 @@ public class AeronQuickFactory implements AutoCloseable{
         return this.getReceiverBuilder(Adapters.adapt(targetServer).orElseThrow(IllegalStateException::new));
     }
 
-    public <T> Optional<AeronQuickReceiverBuilder<T>> getReceiverBuilder(ServerAdapterBase<T> serverEntrypoint){
+    public <T> Optional<AeronQuickReceiverBuilder<T>> getReceiverBuilder(ReceiverAdapterBase<T> serverEntrypoint){
         try {
             assertFactoryIsReady();
             return Optional.of(new AeronQuickReceiverBuilder<>(serverEntrypoint, null, this.aeron));
