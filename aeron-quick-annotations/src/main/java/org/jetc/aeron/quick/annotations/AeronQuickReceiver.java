@@ -21,7 +21,6 @@ public @interface AeronQuickReceiver {
 
     /**
      * If not defined it is assumed that the class is a direct implementor of an {@link AeronQuickContract}
-     * @return
      */
     Class<?> contract() default NullType.class;
 }
