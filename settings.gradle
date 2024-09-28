@@ -1,3 +1,4 @@
 rootProject.name = 'aeron-quick'
 include 'aeron-quick-base',
-        'aeron-quick-samples'
+        'aeron-quick-samples',
+        'aeron-quick-annotations'

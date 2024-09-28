@@ -1,0 +1,53 @@
+plugins {
+    id 'java-library'
+}
+
+repositories {
+    mavenCentral()
+}
+
+java {
+    sourceCompatibility = "$globalJdkVersion"
+    toolchain { languageVersion = JavaLanguageVersion.of(globalJdkVersion) }
+    withJavadocJar()
+}
+
+dependencies {
+    testImplementation 'com.google.testing.compile:compile-testing:0.21.0'
+    testImplementation libs.junit
+    testImplementation libs.junitEngine
+}
+
+tasks.register('copy-aeron-quick', Copy){
+    dependsOn ':aeron-quick-base:fatJar'
+    from project(':aeron-quick-base').layout.buildDirectory
+    include 'libs/**-fat.jar'
+    into 'src/test/resources/java'
+}
+
+tasks.register('copy-aeron-quick-annotations', Copy){
+    dependsOn jar
+    from project.layout.buildDirectory
+    include 'libs/*.jar'
+    into 'src/test/resources/java'
+}
+
+tasks.named('processTestResources'){
+    dependsOn 'copy-aeron-quick'
+    dependsOn 'copy-aeron-quick-annotations'
+}
+
+tasks.named('test', Test){
+    useJUnitPlatform()
+    testLogging { events "passed", "skipped", "failed" }
+}
+
+tasks.named('jar', Jar){
+    manifest {
+        attributes(
+                'Implementation-Title'  : project.name,
+                'Implementation-Version': globalProjectVersion,
+                'Implementation-Vendor' : globalPackageVendor
+        )
+    }
+}
