@@ -11,7 +11,7 @@ public class AeronFragmentHandlerWriter {
 
     public static void appendParamValueFromBufferStr(AdapterCodeWriter writer, String bufferName, String offsetStr, VariableElement param) throws IOException, AdaptingError {
         TypeKind kind = param.asType().getKind();
-        writer.iAppend(bufferName).append(".");
+        writer.append(bufferName).append(".");
 
         switch (kind) {
             case SHORT -> writer.append("getShort(");
@@ -20,7 +20,8 @@ public class AeronFragmentHandlerWriter {
             case CHAR -> writer.append("getChar(");
             case FLOAT -> writer.append("getFloat(");
             case DOUBLE -> writer.append("getDouble(");
-            default -> throw new AdaptingError("Unsupported parameter type on method "+ param.getEnclosingElement().getSimpleName() + ": "+ param.asType() + " " + param.getSimpleName());
+            case DECLARED -> writer.append("getStringUtf8(");
+            default -> throw new AdaptingError("Unsupported/Not-Resolved parameter type on method "+ param.getEnclosingElement().getSimpleName() + ": "+ param.asType() + " " + param.getSimpleName() + ". Should be an imported class, interface or primitive type");
         }
         writer.append(offsetStr).append(", " + DEFAULT_BYTE_ORDER + ")");
     }
