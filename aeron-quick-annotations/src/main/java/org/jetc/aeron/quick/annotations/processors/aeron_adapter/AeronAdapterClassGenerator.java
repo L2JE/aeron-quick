@@ -41,7 +41,7 @@ public class AeronAdapterClassGenerator {
         try (AdapterCodeWriter gen = new ChannelStreamPerMethodAdapterWriter(filer.createSourceFile(elementPackage.getQualifiedName() + "." + finalAdapterName), config)) {
             gen.generateAdapterCode();
         } catch (IOException | AdaptingError ex) {
-            String msg = "The was an error while creating an adapter for " + classToAdapt.getQualifiedName() + ": " + ex.getLocalizedMessage();
+            String msg = "There was an error while creating an adapter for " + classToAdapt.getQualifiedName() + ": " + ex.getLocalizedMessage();
             log.warnMand(msg);
             throw new RuntimeException(msg);
         }
