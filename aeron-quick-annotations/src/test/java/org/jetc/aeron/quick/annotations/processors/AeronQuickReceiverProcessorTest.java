@@ -112,10 +112,9 @@ class AeronQuickReceiverProcessorTest extends JavacTest {
                             "notifyOperationDone",
                             3,
                             aeron -> (DirectBuffer buffer, int offset, int length, Header header) -> {
-                                server.notifyOperationDone(
-                                    buffer.getChar(offset, ByteOrder.LITTLE_ENDIAN),
-                                    buffer.getInt(offset + BitUtil.SIZE_OF_CHAR, ByteOrder.LITTLE_ENDIAN)
-                                );
+                                char param0 = buffer.getChar(offset, ByteOrder.LITTLE_ENDIAN);
+                                int param1 = buffer.getInt(offset + BitUtil.SIZE_OF_CHAR, ByteOrder.LITTLE_ENDIAN);
+                                server.notifyOperationDone(param0, param1);
                             }
                         )
                                     
@@ -218,10 +217,9 @@ class AeronQuickReceiverProcessorTest extends JavacTest {
                                         "notifyOperationDone",
                                         3,
                                         aeron -> (DirectBuffer buffer, int offset, int length, Header header) -> {
-                                            server.notifyOperationDone(
-                                                buffer.getChar(offset, ByteOrder.LITTLE_ENDIAN),
-                                                buffer.getInt(offset + BitUtil.SIZE_OF_CHAR, ByteOrder.LITTLE_ENDIAN)
-                                            );
+                                            char param0 = buffer.getChar(offset, ByteOrder.LITTLE_ENDIAN);
+                                            int param1 = buffer.getInt(offset + BitUtil.SIZE_OF_CHAR, ByteOrder.LITTLE_ENDIAN);
+                                            server.notifyOperationDone(param0, param1);
                                         }
                                     ),
                                     new Binding(
@@ -325,10 +323,9 @@ class AeronQuickReceiverProcessorTest extends JavacTest {
                                         "notifyOperationDone",
                                         3,
                                         aeron -> (DirectBuffer buffer, int offset, int length, Header header) -> {
-                                            server.notifyOperationDone(
-                                                buffer.getChar(offset, ByteOrder.LITTLE_ENDIAN),
-                                                buffer.getInt(offset + BitUtil.SIZE_OF_CHAR, ByteOrder.LITTLE_ENDIAN)
-                                            );
+                                            char param0 = buffer.getChar(offset, ByteOrder.LITTLE_ENDIAN);
+                                            int param1 = buffer.getInt(offset + BitUtil.SIZE_OF_CHAR, ByteOrder.LITTLE_ENDIAN);
+                                            server.notifyOperationDone(param0, param1);
                                         }
                                     ),
                                     new Binding(
@@ -338,6 +335,104 @@ class AeronQuickReceiverProcessorTest extends JavacTest {
                                             server.otherAdaptedMethod();
                                         }
                                     ) 
+                                           
+                                );
+                            }
+                        }""",
+                compilation.generatedFiles().getLast().getCharContent(false).toString()
+        );
+    }
+
+    @Test
+    void generates_adapter_string_param_adapt_single_method_marked_with_QuickContractEndpoint_in_same_class() throws IOException {
+        String targetClassName = "AeronQuickGeneralServiceServer";
+        Compilation compilation = withAeronQuickInDefaultClasspath(Compiler.javac())
+                .withProcessors(new AeronQuickReceiverProcessor())
+                .compile(
+                        JavaFileObjects.forSourceString("org.jetc.aeron.quick.samples.general.AeronQuickGeneralServiceServer", """
+                                package org.jetc.aeron.quick.samples.general;
+                                import java.lang.annotation.ElementType;
+                                import java.lang.annotation.Retention;
+                                import java.lang.annotation.RetentionPolicy;
+                                import java.lang.annotation.Target;
+                                import org.jetc.aeron.quick.annotations.AeronQuickReceiver;
+                                import org.jetc.aeron.quick.annotations.QuickContractEndpoint;
+                        
+                                @AeronQuickReceiver(name = "receiverX")
+                                class AeronQuickGeneralServiceServer {
+                                    @QuickContractEndpoint
+                                    public void methodWStringParam(String extraData, int param2){}
+                                }
+                        """)
+                );
+
+        CompilationSubject.assertThat(compilation).succeeded();
+        CompilationSubject.assertThat(compilation).generatedFile(StandardLocation.SOURCE_OUTPUT,"org/jetc/aeron/quick/samples/general/"+targetClassName+"_Adapter.java");
+        CompilationSubject.assertThat(compilation).generatedFile(StandardLocation.CLASS_OUTPUT,"org/jetc/aeron/quick/samples/general/"+targetClassName+"_Adapter.class");
+        Assertions.assertEquals(
+                """
+                        package org.jetc.aeron.quick.samples.general;
+                        import org.jetc.aeron.quick.server.precompile.ReceiverAdapterBase;
+                        import org.jetc.aeron.quick.messaging.ReceiverBindingProvider;
+                        import org.jetc.aeron.quick.messaging.fragment_handling.ContextualHandler;
+                        import org.jetc.aeron.quick.messaging.subscription.SubscriptionMeta;
+                        import com.fasterxml.jackson.core.JsonProcessingException;
+                        import com.fasterxml.jackson.databind.ObjectMapper;
+                        import io.aeron.Publication;
+                        import io.aeron.logbuffer.Header;
+                        import org.agrona.DirectBuffer;
+                        import org.agrona.ExpandableDirectByteBuffer;
+                        import org.agrona.MutableDirectBuffer;
+                        import org.agrona.BitUtil;
+                        import org.slf4j.Logger;
+                        import org.slf4j.LoggerFactory;
+                        import java.nio.ByteOrder;
+                        import java.util.HashMap;
+                        import java.util.List;
+                        import java.util.Map;
+                                                
+                        class AeronQuickGeneralServiceServer_Adapter implements ReceiverAdapterBase<AeronQuickGeneralServiceServer>{
+                            private static final Logger log = LoggerFactory.getLogger(AeronQuickGeneralServiceServer_Adapter.class);
+                            private static final String PROPS_SUFFIX = "aeron.quick.receiverX.";
+                            private record Binding(String methodName, int fragmentLimit, ContextualHandler handler){}
+                            private final List<Binding> bindingsToCompute;
+                                                
+                            private static String getPropForMethod(String method, String prop){
+                                    String value = System.getProperty(PROPS_SUFFIX + method + "." + prop);
+                                    if(value == null || value.isBlank())
+                                        value = System.getProperty(PROPS_SUFFIX + prop);
+                                    return value;
+                            }
+                                                
+                            @Override
+                            public ReceiverBindingProvider getBindings() {
+                                ReceiverBindingProvider computedBindings = new ReceiverBindingProvider(new HashMap<>());
+                                                
+                                for (Binding binding : this.bindingsToCompute){
+                                    boolean isRepeatedBinding = computedBindings.setBinding(
+                                            getPropForMethod(binding.methodName() ,"channel"),
+                                            Integer.parseInt(getPropForMethod(binding.methodName(), "stream")),
+                                            new SubscriptionMeta(binding.handler(), binding.fragmentLimit())
+                                    ) != null;
+                                                
+                                    if(isRepeatedBinding)
+                                        throw new IllegalStateException("Only unique channel-stream pairs are allowed. Check properties for: %s".formatted(PROPS_SUFFIX + binding.methodName()));
+                                }
+                                                
+                                return computedBindings;
+                            }
+                            public AeronQuickGeneralServiceServer_Adapter(AeronQuickGeneralServiceServer server){
+                                MutableDirectBuffer rspBuffer = new ExpandableDirectByteBuffer(256);
+                                bindingsToCompute = List.of(
+                                    new Binding(
+                                        "methodWStringParam",
+                                        3,
+                                        aeron -> (DirectBuffer buffer, int offset, int length, Header header) -> {
+                                            java.lang.String param0 = buffer.getStringUtf8(offset, ByteOrder.LITTLE_ENDIAN);
+                                            int param1 = buffer.getInt(offset + param0.length() + BitUtil.SIZE_OF_INT, ByteOrder.LITTLE_ENDIAN);
+                                            server.methodWStringParam(param0, param1);
+                                        }
+                                    )
                                            
                                 );
                             }
@@ -432,10 +527,9 @@ class AeronQuickReceiverProcessorTest extends JavacTest {
                                         "notifyOperationDone",
                                         3,
                                         aeron -> (DirectBuffer buffer, int offset, int length, Header header) -> {
-                                            server.notifyOperationDone(
-                                                buffer.getChar(offset, ByteOrder.LITTLE_ENDIAN),
-                                                buffer.getInt(offset + BitUtil.SIZE_OF_CHAR, ByteOrder.LITTLE_ENDIAN)
-                                            );
+                                            char param0 = buffer.getChar(offset, ByteOrder.LITTLE_ENDIAN);
+                                            int param1 = buffer.getInt(offset + BitUtil.SIZE_OF_CHAR, ByteOrder.LITTLE_ENDIAN);
+                                            server.notifyOperationDone(param0, param1);
                                         }
                                     )
                                            
@@ -666,7 +760,7 @@ class AeronQuickReceiverProcessorTest extends JavacTest {
     }
 
     @Test
-    void throws_when_method_to_adapt_has_non_primitive_args() {
+    void throws_when_method_to_adapt_has_non_imported_type_on_parameter() {
         JavaFileObject receiverCode = JavaFileObjects.forSourceString("org.jetc.aeron.quick.samples.general.AeronQuickGeneralServiceServer", """
                                 package org.jetc.aeron.quick.samples.general;
                                 import java.lang.annotation.ElementType;
@@ -682,13 +776,12 @@ class AeronQuickReceiverProcessorTest extends JavacTest {
                                     public void notifyOperationDone(char extraData, Example param2){}
                                     public long otherMethod(){return 0;}
                                 }
-                                record Example(String val1){}
                         """);
         Compiler compiler = withAeronQuickInDefaultClasspath(Compiler.javac()).withProcessors(new AeronQuickReceiverProcessor());
 
         Throwable thrown = assertThrows(RuntimeException.class, () -> compiler.compile(receiverCode));
         assertEquals(
-                "There was an error while creating an adapter for org.jetc.aeron.quick.samples.general.AeronQuickGeneralServiceServer: org.jetc.aeron.quick.annotations.processors.utils.AdaptingError: Unsupported parameter type on method notifyOperationDone: org.jetc.aeron.quick.samples.general.Example param2",
+                "There was an error while creating an adapter for org.jetc.aeron.quick.samples.general.AeronQuickGeneralServiceServer: org.jetc.aeron.quick.annotations.processors.utils.AdaptingError: Unsupported/Not-Resolved parameter type on method notifyOperationDone: Example param2. Should be an imported class, interface or primitive type",
                 thrown.getCause().getMessage()
         );
     }
@@ -716,7 +809,7 @@ class AeronQuickReceiverProcessorTest extends JavacTest {
 
         Throwable thrown = assertThrows(RuntimeException.class, () -> compiler.compile(receiverCode));
         assertEquals(
-                "There was an error while creating an adapter for org.jetc.aeron.quick.samples.general.AeronQuickGeneralServiceServer: org.jetc.aeron.quick.annotations.processors.utils.AdaptingError: Unsupported parameter type on method notifyOperationDone: int[] param2",
+                "There was an error while creating an adapter for org.jetc.aeron.quick.samples.general.AeronQuickGeneralServiceServer: org.jetc.aeron.quick.annotations.processors.utils.AdaptingError: Unsupported/Not-Resolved parameter type on method notifyOperationDone: int[] param2. Should be an imported class, interface or primitive type",
                 thrown.getCause().getMessage()
         );
     }

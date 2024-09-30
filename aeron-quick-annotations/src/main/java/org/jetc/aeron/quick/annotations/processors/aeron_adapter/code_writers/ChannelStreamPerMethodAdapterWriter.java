@@ -143,24 +143,25 @@ public class ChannelStreamPerMethodAdapterWriter extends AdapterCodeWriter {
     private void writeHandlerBody(AdaptableMethod method) throws Exception{
         final int lastParamIx = method.getParamsCount() - 1;
 
-        iAppend(DEFAULT_SERVER_PARAM_NAME + "." + method.getSimpleName() + "(");
-
         if(lastParamIx > -1) {
             StringBuilder paramListLenStr = new StringBuilder();
-            startBlock();
             method.forEachParam((param, ix) -> {
+                iAppend(param.getDeclaredType() + " " + param.getParamId() + " = ");
                 appendParamValueFromBufferStr(this, "buffer", "offset" + paramListLenStr, param.getElement());
 
-                if (ix < lastParamIx) {
-                    append(",");
-                    newLine();
-                }
+                append(";");
+                newLine();
 
                 paramListLenStr.append(" + ").append(param.getLengthStr());
             });
-            endBlock();
-            iAppend("");
         }
+
+        iAppend(DEFAULT_SERVER_PARAM_NAME + "." + method.getSimpleName() + "(");
+        method.forEachParam((param, ix)->{
+            append(param.getParamId());
+            if(ix < lastParamIx)
+                append(", ");
+        });
         append(");");
     }
 
