@@ -121,13 +121,21 @@ public class ChannelStreamPerMethodAdapterWriter extends AdapterCodeWriter {
         newLine();
         iAppend(DEFAULT_FRAGMENT_LIMIT + ",");
         newLine();
-        iAppend(CONTEXTUAL_HANDLER_1ST_LINE);
-        startBlock();
 
-        writeHandlerBody(method);
+        switch (method.getMethodKind()){
+            case CONTEXTUAL_HANDLER -> iAppend(DEFAULT_SERVER_PARAM_NAME + "::" + method.getSimpleName());
+            case FRAGMENT_HANDLER -> iAppend("aeron -> "+ DEFAULT_SERVER_PARAM_NAME + "::" + method.getSimpleName());
+            case COMMON -> {
+                iAppend(CONTEXTUAL_HANDLER_1ST_LINE);
+                startBlock();
 
-        endBlock();
-        iAppend("}");
+                writeHandlerBody(method);
+
+                endBlock();
+                iAppend("}");
+            }
+        }
+
         endBlock();
         iAppend(")");
     }
