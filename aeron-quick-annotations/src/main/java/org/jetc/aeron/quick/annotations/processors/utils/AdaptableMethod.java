@@ -4,6 +4,8 @@ import org.jetc.aeron.quick.annotations.QuickContractEndpoint;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.TypeKind;
+import static org.jetc.aeron.quick.annotations.processors.utils.InterfaceCompatibilityUtils.methodIsContextualFragmentHandler;
+import static org.jetc.aeron.quick.annotations.processors.utils.InterfaceCompatibilityUtils.methodIsFragmentHandler;
 
 public class AdaptableMethod {
     private final ExecutableElement method;
@@ -31,6 +33,17 @@ public class AdaptableMethod {
         return this.method.getParameters().size();
     }
 
+    public MethodKind getMethodKind(){
+        MethodKind kind = MethodKind.COMMON;
+        if(methodIsFragmentHandler(this.method))
+            kind = MethodKind.FRAGMENT_HANDLER;
+
+        if(methodIsContextualFragmentHandler(this.method))
+            kind = MethodKind.CONTEXTUAL_HANDLER;
+
+        return kind;
+    }
+
     public static class AdaptableParam {
         private final VariableElement param;
         public AdaptableParam(VariableElement param) {
@@ -56,5 +69,11 @@ public class AdaptableMethod {
                 default -> null; //TODO: ADD CASES FOR STRING OR OTHER TYPES
             };
         }
+    }
+
+    public enum MethodKind {
+        FRAGMENT_HANDLER,
+        CONTEXTUAL_HANDLER,
+        COMMON
     }
 }
