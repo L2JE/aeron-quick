@@ -49,7 +49,7 @@ public class ChannelStreamPerMethodAdapterWriter extends AdapterCodeWriter {
                 import java.util.Map;
                 """);
         newLine();
-        append("class ").append(config.finalAdapterName()).append(" implements ").append(ADAPTER_BASE_CLASS_NAME + "<").append(config.classToAdaptName()).append(">").append("{");
+        append("public class ").append(config.finalAdapterName()).append(" implements ").append(ADAPTER_BASE_CLASS_NAME + "<").append(config.classToAdaptName()).append(">").append("{");
         startBlock();
         append("    private static final Logger log = LoggerFactory.getLogger(").append(config.finalAdapterName()).append(".class);");
         newLine();

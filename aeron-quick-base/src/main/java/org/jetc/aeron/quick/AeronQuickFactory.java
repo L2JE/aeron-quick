@@ -55,7 +55,9 @@ public class AeronQuickFactory implements AutoCloseable{
      * @throws SetupNotReadyException if Aeron client is not connected
      */
     public <T> Optional<AeronQuickReceiverBuilder<T>> getReceiverBuilder(T targetServer) throws AeronException {
-        return this.getReceiverBuilder(Adapters.adapt(targetServer).orElseThrow(IllegalStateException::new));
+        return this.getReceiverBuilder(
+            Adapters.adapt(targetServer).orElseThrow(() -> new IllegalStateException("No Adapter class could be loaded for: " + targetServer.getClass().getCanonicalName()))
+        );
     }
 
     public <T> Optional<AeronQuickReceiverBuilder<T>> getReceiverBuilder(ReceiverAdapterBase<T> serverEntrypoint){
