@@ -6,9 +6,9 @@ import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.TypeMirror;
 import java.util.LinkedList;
 import java.util.List;
-
 import static org.jetc.aeron.quick.annotations.processors.utils.InterfaceCompatibilityUtils.methodIsContextualFragmentHandler;
 import static org.jetc.aeron.quick.annotations.processors.utils.InterfaceCompatibilityUtils.methodIsFragmentHandler;
+import static org.jetc.aeron.quick.annotations.processors.utils.FullyQualifiedClassNames.STRING_TYPE;
 
 public class AdaptableMethod {
     private final ExecutableElement method;
@@ -63,10 +63,13 @@ public class AdaptableMethod {
 
     public static class AdaptableParam {
         private final VariableElement param;
-        private final String paramId;
+        private String paramId;
+        private final boolean isNoStringObject;
+
         public AdaptableParam(VariableElement param, int paramId) {
             this.param = param;
             this.paramId = "param" + paramId;
+            isNoStringObject = !this.param.asType().getKind().isPrimitive() && !this.param.asType().toString().equals(STRING_TYPE);
         }
 
         public VariableElement getElement(){
@@ -75,6 +78,10 @@ public class AdaptableMethod {
 
         public TypeMirror getDeclaredType(){
             return this.param.asType();
+        }
+
+        public boolean isNoStringObject(){
+            return isNoStringObject;
         }
 
         public String getLengthStr(){
@@ -92,6 +99,10 @@ public class AdaptableMethod {
 
         public String getParamId() {
             return paramId;
+        }
+
+        public void setParamId(String newParamId) {
+            paramId = newParamId;
         }
     }
 

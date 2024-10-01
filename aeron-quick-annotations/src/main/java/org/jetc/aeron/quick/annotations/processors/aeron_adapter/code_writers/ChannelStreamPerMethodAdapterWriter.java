@@ -8,12 +8,15 @@ import javax.tools.JavaFileObject;
 import java.io.IOException;
 import java.util.List;
 import static org.jetc.aeron.quick.annotations.processors.aeron_adapter.code_writers.AeronFragmentHandlerWriter.appendParamValueFromBufferStr;
+import static org.jetc.aeron.quick.annotations.processors.utils.FullyQualifiedClassNames.STRING_TYPE;
 
 public class ChannelStreamPerMethodAdapterWriter extends AdapterCodeWriter {
     private static final String ADAPTER_BASE_CLASS_NAME = "ReceiverAdapterBase";
     private static final int DEFAULT_FRAGMENT_LIMIT = 3;
     private static final String CONTEXTUAL_HANDLER_1ST_LINE = "aeron -> (DirectBuffer buffer, int offset, int length, Header header) -> {";
     private static final String DEFAULT_SERVER_PARAM_NAME = "server";
+    private static final String MAPPER_METHOD_NAME = "mapToObject";
+    private boolean needsJSONMapper = false;
 
     private final PackageElement elementPackage;
 
@@ -32,8 +35,6 @@ public class ChannelStreamPerMethodAdapterWriter extends AdapterCodeWriter {
                 import org.jetc.aeron.quick.messaging.ReceiverBindingProvider;
                 import org.jetc.aeron.quick.messaging.fragment_handling.ContextualHandler;
                 import org.jetc.aeron.quick.messaging.subscription.SubscriptionMeta;
-                import com.fasterxml.jackson.core.JsonProcessingException;
-                import com.fasterxml.jackson.databind.ObjectMapper;
                 import io.aeron.Publication;
                 import io.aeron.logbuffer.Header;
                 import org.agrona.DirectBuffer;
@@ -89,7 +90,29 @@ public class ChannelStreamPerMethodAdapterWriter extends AdapterCodeWriter {
             throw new IOException(e);
         }
         newLine();
+        writeJSONMapper();
+
         append("}");
+    }
+
+    private void writeJSONMapper() throws IOException {
+        if(needsJSONMapper) {
+            iAppendLine("private static final com.fasterxml.jackson.databind.ObjectMapper mapper = new com.fasterxml.jackson.databind.ObjectMapper();");
+            iAppend("private static <T> T ").append(MAPPER_METHOD_NAME).append("(String content, Class<T> targetClass){");
+            startBlock();
+                iAppend("try {");
+                startBlock();
+                    iAppend("return mapper.readValue(content, targetClass);");
+                endBlock();
+                iAppend("} catch (com.fasterxml.jackson.core.JsonProcessingException e) {");
+                startBlock();
+                    iAppend("throw new RuntimeException(e);");
+                endBlock();
+                iAppend("}");
+            endBlock();
+            iAppend("}");
+            newLine();
+        }
     }
 
     private void writeConstructorMethod() throws Exception {
@@ -146,13 +169,28 @@ public class ChannelStreamPerMethodAdapterWriter extends AdapterCodeWriter {
         if(lastParamIx > -1) {
             StringBuilder paramListLenStr = new StringBuilder();
             method.forEachParam((param, ix) -> {
-                iAppend(param.getDeclaredType() + " " + param.getParamId() + " = ");
-                appendParamValueFromBufferStr(this, "buffer", "offset" + paramListLenStr, param.getElement());
+                String originalParamId = param.getParamId();
+                String declaredType = param.getDeclaredType().toString();
 
-                append(";");
+                if(param.isNoStringObject()) {
+                    param.setParamId(originalParamId + "_str");
+                    declaredType = STRING_TYPE;
+                }
+
+                iAppend(declaredType + " " + param.getParamId() + " = ");
+
+                appendParamValueFromBufferStr(this, "buffer", "offset" + paramListLenStr, param.getElement()).append(";");;
+
+                if(param.isNoStringObject()) {
+                    needsJSONMapper = true;
+                    newLine();
+                    iAppend(param.getDeclaredType() + " " + originalParamId + " = ").append(MAPPER_METHOD_NAME + "(").append(param.getParamId()).append(", ").append(param.getDeclaredType().toString()).append(".class);");
+                }
+
                 newLine();
 
                 paramListLenStr.append(" + ").append(param.getLengthStr());
+                param.setParamId(originalParamId);
             });
         }
 
