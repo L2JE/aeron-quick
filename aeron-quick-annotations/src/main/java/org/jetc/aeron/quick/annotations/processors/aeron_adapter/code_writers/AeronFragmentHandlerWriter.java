@@ -9,7 +9,7 @@ import java.io.IOException;
 public class AeronFragmentHandlerWriter {
     private static final String DEFAULT_BYTE_ORDER = "ByteOrder.LITTLE_ENDIAN";
 
-    public static void appendParamValueFromBufferStr(AdapterCodeWriter writer, String bufferName, String offsetStr, VariableElement param) throws IOException, AdaptingError {
+    public static AdapterCodeWriter appendParamValueFromBufferStr(AdapterCodeWriter writer, String bufferName, String offsetStr, VariableElement param) throws IOException, AdaptingError {
         TypeKind kind = param.asType().getKind();
         writer.append(bufferName).append(".");
 
@@ -24,5 +24,6 @@ public class AeronFragmentHandlerWriter {
             default -> throw new AdaptingError("Unsupported/Not-Resolved parameter type on method "+ param.getEnclosingElement().getSimpleName() + ": "+ param.asType() + " " + param.getSimpleName() + ". Should be an imported class, interface or primitive type");
         }
         writer.append(offsetStr).append(", " + DEFAULT_BYTE_ORDER + ")");
+        return writer;
     }
 }
