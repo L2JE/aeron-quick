@@ -73,7 +73,7 @@ class AeronQuickReceiverProcessorTest extends JavacTest {
             import java.util.List;
             import java.util.Map;
                                     
-            class AeronQuickGeneralServiceServer_Adapter implements ReceiverAdapterBase<AeronQuickGeneralServiceServer>{
+            public class AeronQuickGeneralServiceServer_Adapter implements ReceiverAdapterBase<AeronQuickGeneralServiceServer>{
                 private static final Logger log = LoggerFactory.getLogger(AeronQuickGeneralServiceServer_Adapter.class);
                 private static final String PROPS_SUFFIX = "aeron.quick.exampleReceiver.";
                 private record Binding(String methodName, int fragmentLimit, ContextualHandler handler){}
@@ -176,7 +176,7 @@ class AeronQuickReceiverProcessorTest extends JavacTest {
                         import java.util.List;
                         import java.util.Map;
                                                 
-                        class AeronQuickGeneralServiceServer_Adapter implements ReceiverAdapterBase<AeronQuickGeneralServiceServer>{
+                        public class AeronQuickGeneralServiceServer_Adapter implements ReceiverAdapterBase<AeronQuickGeneralServiceServer>{
                             private static final Logger log = LoggerFactory.getLogger(AeronQuickGeneralServiceServer_Adapter.class);
                             private static final String PROPS_SUFFIX = "aeron.quick.receiverX.";
                             private record Binding(String methodName, int fragmentLimit, ContextualHandler handler){}
@@ -280,7 +280,7 @@ class AeronQuickReceiverProcessorTest extends JavacTest {
                         import java.util.List;
                         import java.util.Map;
                                                 
-                        class AeronQuickGeneralServiceServer_Adapter implements ReceiverAdapterBase<AeronQuickGeneralServiceServer>{
+                        public class AeronQuickGeneralServiceServer_Adapter implements ReceiverAdapterBase<AeronQuickGeneralServiceServer>{
                             private static final Logger log = LoggerFactory.getLogger(AeronQuickGeneralServiceServer_Adapter.class);
                             private static final String PROPS_SUFFIX = "aeron.quick.receiverX.";
                             private record Binding(String methodName, int fragmentLimit, ContextualHandler handler){}
@@ -383,7 +383,7 @@ class AeronQuickReceiverProcessorTest extends JavacTest {
                         import java.util.List;
                         import java.util.Map;
                                                 
-                        class AeronQuickGeneralServiceServer_Adapter implements ReceiverAdapterBase<AeronQuickGeneralServiceServer>{
+                        public class AeronQuickGeneralServiceServer_Adapter implements ReceiverAdapterBase<AeronQuickGeneralServiceServer>{
                             private static final Logger log = LoggerFactory.getLogger(AeronQuickGeneralServiceServer_Adapter.class);
                             private static final String PROPS_SUFFIX = "aeron.quick.receiverX.";
                             private record Binding(String methodName, int fragmentLimit, ContextualHandler handler){}
@@ -480,7 +480,7 @@ class AeronQuickReceiverProcessorTest extends JavacTest {
                         import java.util.List;
                         import java.util.Map;
                                                 
-                        class AeronQuickGeneralServiceServer_Adapter implements ReceiverAdapterBase<AeronQuickGeneralServiceServer>{
+                        public class AeronQuickGeneralServiceServer_Adapter implements ReceiverAdapterBase<AeronQuickGeneralServiceServer>{
                             private static final Logger log = LoggerFactory.getLogger(AeronQuickGeneralServiceServer_Adapter.class);
                             private static final String PROPS_SUFFIX = "aeron.quick.receiverX.";
                             private record Binding(String methodName, int fragmentLimit, ContextualHandler handler){}
@@ -578,7 +578,7 @@ class AeronQuickReceiverProcessorTest extends JavacTest {
                         import java.util.List;
                         import java.util.Map;
                                                 
-                        class AeronQuickGeneralServiceServer_Adapter implements ReceiverAdapterBase<AeronQuickGeneralServiceServer>{
+                        public class AeronQuickGeneralServiceServer_Adapter implements ReceiverAdapterBase<AeronQuickGeneralServiceServer>{
                             private static final Logger log = LoggerFactory.getLogger(AeronQuickGeneralServiceServer_Adapter.class);
                             private static final String PROPS_SUFFIX = "aeron.quick.receiverX.";
                             private record Binding(String methodName, int fragmentLimit, ContextualHandler handler){}
@@ -688,7 +688,7 @@ class AeronQuickReceiverProcessorTest extends JavacTest {
                         import java.util.List;
                         import java.util.Map;
                                                 
-                        class AeronQuickGeneralServiceServer_Adapter implements ReceiverAdapterBase<AeronQuickGeneralServiceServer>{
+                        public class AeronQuickGeneralServiceServer_Adapter implements ReceiverAdapterBase<AeronQuickGeneralServiceServer>{
                             private static final Logger log = LoggerFactory.getLogger(AeronQuickGeneralServiceServer_Adapter.class);
                             private static final String PROPS_SUFFIX = "aeron.quick.receiverX.";
                             private record Binding(String methodName, int fragmentLimit, ContextualHandler handler){}
@@ -782,7 +782,7 @@ class AeronQuickReceiverProcessorTest extends JavacTest {
                         import java.util.List;
                         import java.util.Map;
                                                 
-                        class AeronQuickGeneralServiceServer_Adapter implements ReceiverAdapterBase<AeronQuickGeneralServiceServer>{
+                        public class AeronQuickGeneralServiceServer_Adapter implements ReceiverAdapterBase<AeronQuickGeneralServiceServer>{
                             private static final Logger log = LoggerFactory.getLogger(AeronQuickGeneralServiceServer_Adapter.class);
                             private static final String PROPS_SUFFIX = "aeron.quick.receiverX.";
                             private record Binding(String methodName, int fragmentLimit, ContextualHandler handler){}
