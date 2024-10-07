@@ -23,9 +23,7 @@ public abstract class JavacTest {
         List<File> finalCP = new LinkedList<>();
         Compiler.javac().classPath().ifPresent(finalCP::addAll);
 
-        File[] filesToInclude = Paths.get(TEST_RESOURCES, EXTERNAL_LIBS_DIR).toFile().listFiles((dir, name) -> {
-            return name.startsWith("aeron-quick-base") && name.endsWith("-fat.jar") || name.startsWith("aeron-quick-annotations");
-        });
+        File[] filesToInclude = Paths.get(TEST_RESOURCES, EXTERNAL_LIBS_DIR).toFile().listFiles((dir, name) -> name.startsWith("aeron-quick-base") && name.endsWith("-fat.jar") || name.startsWith("aeron-quick-annotations"));
 
         if(filesToInclude != null)
             Collections.addAll(finalCP, filesToInclude);

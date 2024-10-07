@@ -1,23 +1,25 @@
 package org.jetc.aeron.quick.annotations.processors.aeron_adapter;
 
-import org.jetc.aeron.quick.annotations.AeronQuickReceiver;
 import org.jetc.aeron.quick.annotations.processors.utils.AdaptableMethod;
 import javax.lang.model.element.TypeElement;
 import java.util.List;
 
 public class AdapterConfiguration {
+    public static final String SENDER_SUFFIX = "_SAdapter";
+    public static final String RECEIVER_SUFFIX = "_Adapter";
+
     private final TypeElement classToAdapt;
     private final String finalAdapterName;
     private final String classToAdaptName;
     private final List<AdaptableMethod> methodsToAdapt;
-    private final AeronQuickReceiver receiverMark;
+    private final String adapterCfgName;
 
-    public AdapterConfiguration(TypeElement classToAdapt, String finalAdapterName, String classToAdaptName, List<AdaptableMethod> methodsToAdapt) {
+    public AdapterConfiguration(TypeElement classToAdapt, String finalAdapterName, String classToAdaptName, List<AdaptableMethod> methodsToAdapt, String adapterCfgName) {
         this.classToAdapt = classToAdapt;
         this.finalAdapterName = finalAdapterName;
         this.classToAdaptName = classToAdaptName;
         this.methodsToAdapt = methodsToAdapt;
-        this.receiverMark = classToAdapt.getAnnotation(AeronQuickReceiver.class);
+        this.adapterCfgName = adapterCfgName;
     }
 
     public String finalAdapterName() {
@@ -40,7 +42,7 @@ public class AdapterConfiguration {
         return methodsToAdapt;
     }
 
-    public String receiverName(){
-        return receiverMark.name();
+    public String propertiesRootName(){
+        return adapterCfgName;
     }
 }

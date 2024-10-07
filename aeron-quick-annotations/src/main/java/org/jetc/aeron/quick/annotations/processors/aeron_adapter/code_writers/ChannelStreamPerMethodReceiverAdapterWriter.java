@@ -7,10 +7,10 @@ import javax.lang.model.element.PackageElement;
 import javax.tools.JavaFileObject;
 import java.io.IOException;
 import java.util.List;
-import static org.jetc.aeron.quick.annotations.processors.aeron_adapter.code_writers.AeronFragmentHandlerWriter.appendParamValueFromBufferStr;
+import static org.jetc.aeron.quick.annotations.processors.aeron_adapter.code_writers.AeronDirectBufferOperationsWriter.appendParamValueFromBufferStr;
 import static org.jetc.aeron.quick.annotations.processors.utils.FullyQualifiedClassNames.STRING_TYPE;
 
-public class ChannelStreamPerMethodAdapterWriter extends AdapterCodeWriter {
+public class ChannelStreamPerMethodReceiverAdapterWriter extends AdapterCodeWriter {
     private static final String ADAPTER_BASE_CLASS_NAME = "ReceiverAdapterBase";
     private static final int DEFAULT_FRAGMENT_LIMIT = 3;
     private static final String CONTEXTUAL_HANDLER_1ST_LINE = "aeron -> (DirectBuffer buffer, int offset, int length, Header header) -> {";
@@ -20,7 +20,7 @@ public class ChannelStreamPerMethodAdapterWriter extends AdapterCodeWriter {
 
     private final PackageElement elementPackage;
 
-    public ChannelStreamPerMethodAdapterWriter(JavaFileObject sourceFile, AdapterConfiguration config) throws IOException, AdaptingError {
+    public ChannelStreamPerMethodReceiverAdapterWriter(JavaFileObject sourceFile, AdapterConfiguration config) throws IOException, AdaptingError {
         super(sourceFile, config);
         this.elementPackage = (PackageElement) config.classToAdapt().getEnclosingElement();
     }
@@ -53,7 +53,7 @@ public class ChannelStreamPerMethodAdapterWriter extends AdapterCodeWriter {
         startBlock();
         append("    private static final Logger log = LoggerFactory.getLogger(").append(config.finalAdapterName()).append(".class);");
         newLine();
-        append("    private static final String PROPS_SUFFIX = \"aeron.quick.").append(config.receiverName()).append(".\";");
+        append("    private static final String PROPS_SUFFIX = \"aeron.quick.").append(config.propertiesRootName()).append(".\";");
         newLine();
         append("""
                     private record Binding(String methodName, int fragmentLimit, ContextualHandler handler){}
@@ -179,7 +179,7 @@ public class ChannelStreamPerMethodAdapterWriter extends AdapterCodeWriter {
 
                 iAppend(declaredType + " " + param.getParamId() + " = ");
 
-                appendParamValueFromBufferStr(this, "buffer", "offset" + paramListLenStr, param.getElement()).append(";");;
+                appendParamValueFromBufferStr(this, "buffer", "offset" + paramListLenStr, param.getElement()).append(";");
 
                 if(param.isNoStringObject()) {
                     needsJSONMapper = true;

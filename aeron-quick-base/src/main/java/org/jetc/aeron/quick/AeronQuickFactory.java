@@ -5,7 +5,7 @@ import io.aeron.CommonContext;
 import io.aeron.driver.MediaDriver;
 import io.aeron.exceptions.AeronException;
 import org.agrona.CloseHelper;
-import org.jetc.aeron.quick.server.Adapters;
+import org.jetc.aeron.quick.sender.AeronQuickSenderBuilder;
 import org.jetc.aeron.quick.server.AeronQuickReceiverBuilder;
 import org.jetc.aeron.quick.server.precompile.ReceiverAdapterBase;
 import org.slf4j.Logger;
@@ -56,7 +56,7 @@ public class AeronQuickFactory implements AutoCloseable{
      */
     public <T> Optional<AeronQuickReceiverBuilder<T>> getReceiverBuilder(T targetServer) throws AeronException {
         return this.getReceiverBuilder(
-            Adapters.adapt(targetServer).orElseThrow(() -> new IllegalStateException("No Adapter class could be loaded for: " + targetServer.getClass().getCanonicalName()))
+            Adapters.adaptReceiver(targetServer).orElseThrow(() -> new IllegalStateException("No Adapter class could be loaded for: " + targetServer.getClass().getCanonicalName()))
         );
     }
 
@@ -70,8 +70,12 @@ public class AeronQuickFactory implements AutoCloseable{
         return Optional.empty();
     }
 
-    public <T> AeronQuickReceiverBuilder<T> getClientBuilder(Class<T> contract){
-        return null;
+    public <T> Optional<AeronQuickSenderBuilder<T>> getSenderBuilder(Class<T> contract){
+        return Optional.of(
+            new AeronQuickSenderBuilder<>(
+                Adapters.adaptSender(contract, aeron).orElseThrow(() -> new IllegalStateException("No Adapter class could be loaded for: " + contract.getCanonicalName()))
+            )
+        );
     }
 
     /**

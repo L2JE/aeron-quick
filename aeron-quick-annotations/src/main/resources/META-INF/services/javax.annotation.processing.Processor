@@ -1,1 +1,2 @@
 org.jetc.aeron.quick.annotations.processors.AeronQuickReceiverProcessor
+org.jetc.aeron.quick.annotations.processors.AeronQuickSenderProcessor
