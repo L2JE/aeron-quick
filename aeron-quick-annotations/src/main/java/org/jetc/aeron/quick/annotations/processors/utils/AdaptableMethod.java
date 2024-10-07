@@ -3,6 +3,7 @@ package org.jetc.aeron.quick.annotations.processors.utils;
 import org.jetc.aeron.quick.annotations.QuickContractEndpoint;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.VariableElement;
+import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
 import java.util.LinkedList;
 import java.util.List;
@@ -61,6 +62,35 @@ public class AdaptableMethod {
         return kind;
     }
 
+    /**
+     * @return true if all parameters are primitive types
+     */
+    public boolean isPrimitive() {
+        for(VariableElement param : method.getParameters())
+            if(!param.asType().getKind().isPrimitive())
+                return false;
+        return true;
+    }
+
+    public TypeKind getReturnType(){
+        return method.getReturnType().getKind();
+    }
+
+    public CharSequence getSignature() {
+        StringBuilder b = new StringBuilder();
+        b.append(method.getReturnType()).append(" ").append(method.getSimpleName()).append("(");
+
+        long lastMethodIx = method.getParameters().size() - 1;
+        for (var param : method.getParameters()) {
+            b.append(param.asType()).append(" ").append(param.getSimpleName());
+
+            if(lastMethodIx-- > 0)
+                b.append(", ");
+
+        }
+        return b.append(")");
+    }
+
     public static class AdaptableParam {
         private final VariableElement param;
         private String paramId;
@@ -103,6 +133,17 @@ public class AdaptableMethod {
 
         public void setParamId(String newParamId) {
             paramId = newParamId;
+        }
+
+        /**
+         * @return the name of the parameter in the method signature
+         */
+        public String getParamName() {
+            return param.getSimpleName().toString();
+        }
+
+        public boolean isPrimitive() {
+            return param.asType().getKind().isPrimitive();
         }
     }
 
