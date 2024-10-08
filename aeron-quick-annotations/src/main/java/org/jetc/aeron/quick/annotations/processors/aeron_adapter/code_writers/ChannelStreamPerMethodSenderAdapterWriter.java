@@ -41,7 +41,7 @@ public class ChannelStreamPerMethodSenderAdapterWriter extends AdapterCodeWriter
         newLine();
         append("public class ").append(config.finalAdapterName()).append(" implements ").append(SENDER_ADAPTER_QUALIFIED_NAME + "<").append(config.classToAdaptName()).append(">, ").append(config.classToAdaptName()).append("{");
         startBlock();
-        append("    private static final String PROPS_SUFFIX = \"aeron.quick.").append(config.propertiesRootName()).append(".\";");
+        append("    private static final String PROPS_SUFFIX = \"aeron.quick.\";");
         newLine();
         append("""
             private final Duration idleTime = Duration.ofMillis(100);
@@ -50,8 +50,8 @@ public class ChannelStreamPerMethodSenderAdapterWriter extends AdapterCodeWriter
             private final long maxRetries = connectionTimeout.toMillis() / idleTime.toMillis();
             private final int DEFAULT_INIT_BUFFER_SIZE = 256;
         
-            private static String getPropForMethod(String method, String prop){
-                String value = System.getProperty(PROPS_SUFFIX + method + "." + prop);
+            private static String getPropForMethod(String client, String method, String prop){
+                String value = System.getProperty(PROPS_SUFFIX + client + "." + method + "." + prop);
                 if(value == null || value.isBlank())
                     value = System.getProperty(PROPS_SUFFIX + prop);
                 return value;
@@ -76,7 +76,7 @@ public class ChannelStreamPerMethodSenderAdapterWriter extends AdapterCodeWriter
         iAppend("private final Publication[] publications = new Publication[").append(String.valueOf(config.methodsToAdapt().size())).append("];");
         newLine();
         writeBuffersAttribute();
-        writeConstructorMethod();
+        writeInitSenderMethod();
         writeContractMethodsImplementations();
         newLine();
         writeJSONMapper();
@@ -102,8 +102,9 @@ public class ChannelStreamPerMethodSenderAdapterWriter extends AdapterCodeWriter
         iAppendLine("};");
     }
 
-    private void writeConstructorMethod() throws IOException {
-        iAppend("public ").append(config.finalAdapterName()).append("(Aeron aeron) {");
+    private void writeInitSenderMethod() throws IOException {
+        iAppendLine("@Override");
+        iAppend("public void initSender(Aeron aeron, String clientName) {");
         startBlock();
             iAppend("final String[] methods = new String[]{");
             long lastMethodIx = config.methodsToAdapt().size() - 1;
@@ -118,8 +119,8 @@ public class ChannelStreamPerMethodSenderAdapterWriter extends AdapterCodeWriter
             append("""
                     for(int i = 0; i < publications.length; i++){
                         publications[i] = aeron.addExclusivePublication(
-                            getPropForMethod(methods[i], "channel"),
-                            Integer.parseInt(getPropForMethod(methods[i], "stream"))
+                            getPropForMethod(clientName, methods[i], "channel"),
+                            Integer.parseInt(getPropForMethod(clientName, methods[i], "stream"))
                         );
                     }
             """);
