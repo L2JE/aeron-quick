@@ -15,13 +15,6 @@ import java.lang.annotation.Target;
 @Retention(RetentionPolicy.SOURCE)
 public @interface AeronQuickSender {
     /**
-     * receiver name where to look for properties.
-     * <p>
-     * if not defined it will be taken from the name of the method, local variable or class attribute
-     */
-    String name();
-
-    /**
      * If not defined it will be taken from the type of the method return value, local variable or class attribute
      */
     Class<?> contract() default NullType.class;

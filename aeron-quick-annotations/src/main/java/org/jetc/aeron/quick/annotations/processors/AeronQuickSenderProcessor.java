@@ -44,8 +44,8 @@ public class AeronQuickSenderProcessor extends AeronQuickContractProcessor {
     }
 
     @Override
-    protected void processContractMethods(Element annotatedEl, TypeElement classToAdapt, List<AdaptableMethod> methodsToAdapt) {
-        creator.adaptSender(annotatedEl, classToAdapt, methodsToAdapt);
+    protected void processContractMethods(TypeElement classToAdapt, List<AdaptableMethod> methodsToAdapt) {
+        creator.adaptSender(classToAdapt, methodsToAdapt);
     }
 
     @Override

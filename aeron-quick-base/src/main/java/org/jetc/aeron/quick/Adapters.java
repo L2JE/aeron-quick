@@ -38,17 +38,17 @@ public class Adapters {
 
     /**
      * Loads and retrieves an adapter for a class (contract class) that has methods marked with {@link org.jetc.aeron.quick.annotations.QuickContractEndpoint @QuickContractEndpoint} which will bind the stream and channels to the corresponding method
+     * @param <T> Any class marked {@link org.jetc.aeron.quick.annotations.AeronQuickContract @AeronQuickContract} or having at least one method marked with {@link org.jetc.aeron.quick.annotations.QuickContractEndpoint @QuickContractEndpoint}
      * @param contract to adapt with the compile time generated adapter
      * @return the corresponding sender adapter for the target contract or null if the class is not a valid contract
-     * @param <T> Any class marked {@link org.jetc.aeron.quick.annotations.AeronQuickContract @AeronQuickContract} or having at least one method marked with {@link org.jetc.aeron.quick.annotations.QuickContractEndpoint @QuickContractEndpoint}
      */
     @SuppressWarnings("unchecked")
-    public static <T> Optional<SenderAdapterBase<T>> adaptSender(Class<T> contract, Aeron aeron) {
+    public static <T> Optional<SenderAdapterBase<T>> adaptSender(Class<T> contract) {
         SenderAdapterBase<T> adapter = null;
         try {
             adapter = (SenderAdapterBase<T>) Class.forName(contract.getCanonicalName() + SENDER_ADAPTER_SUFFIX)
-                    .getDeclaredConstructor(Aeron.class)
-                    .newInstance(aeron);
+                    .getDeclaredConstructor()
+                    .newInstance();
         } catch (ClassNotFoundException | InvocationTargetException | IllegalAccessException | NoSuchMethodException | InstantiationException ignored) {
             throw new RuntimeException();
         }

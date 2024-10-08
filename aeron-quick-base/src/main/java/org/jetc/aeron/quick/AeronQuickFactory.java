@@ -70,11 +70,23 @@ public class AeronQuickFactory implements AutoCloseable{
         return Optional.empty();
     }
 
-    public <T> Optional<AeronQuickSenderBuilder<T>> getSenderBuilder(Class<T> contract){
+    /**
+     * @param contract an Aeron Quick Contract, any class annotated with
+     * {@link org.jetc.aeron.quick.annotations.AeronQuickContract @AeronQuickContract} or at least has one method
+     * annotated with {@link org.jetc.aeron.quick.annotations.QuickContractEndpoint @QuickContractEndpoint}
+     * <p>
+     * @param clientName used to find configuration properties at
+     * <p>
+     * {@code aeron.quick.<clientName>} eg:
+     * <p>
+     * {@code aeron.quick.sampleClient.methodName.channel = aeron:udp?endpoint=localhost:20121}
+     * @return a client implementing the given contract, so calling a method in the client results in sending a message through Aeron
+     */
+    public <T> Optional<AeronQuickSenderBuilder<T>> getSenderBuilder(Class<T> contract, String clientName){
         return Optional.of(
             new AeronQuickSenderBuilder<>(
-                Adapters.adaptSender(contract, aeron).orElseThrow(() -> new IllegalStateException("No Adapter class could be loaded for: " + contract.getCanonicalName()))
-            )
+                Adapters.adaptSender(contract).orElseThrow(() -> new IllegalStateException("No Adapter class could be loaded for: " + contract.getCanonicalName()))
+            ).setClientName(clientName).setAeron(aeron)
         );
     }
 

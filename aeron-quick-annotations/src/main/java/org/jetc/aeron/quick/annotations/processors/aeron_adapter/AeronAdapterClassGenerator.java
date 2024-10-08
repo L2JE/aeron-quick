@@ -27,11 +27,11 @@ public class AeronAdapterClassGenerator {
         this.log = new AnnotationLogger(messager);
     }
 
-    public void adaptSender(Element annotatedEl, TypeElement classToAdapt, List<AdaptableMethod> methodsToAdapt) {
-        adapt(classToAdapt, methodsToAdapt, AdapterConfiguration.SENDER_SUFFIX, annotatedEl.getAnnotation(AeronQuickSender.class).name(), ChannelStreamPerMethodSenderAdapterWriter::new);
+    public void adaptSender(TypeElement classToAdapt, List<AdaptableMethod> methodsToAdapt) {
+        adapt(classToAdapt, methodsToAdapt, AdapterConfiguration.SENDER_SUFFIX, null, ChannelStreamPerMethodSenderAdapterWriter::new);
     }
 
-    public void adaptReceiver(Element annotatedEl, TypeElement classToAdapt, List<AdaptableMethod> methodsToAdapt) {
+    public void adaptReceiver(TypeElement classToAdapt, List<AdaptableMethod> methodsToAdapt) {
         adapt(classToAdapt, methodsToAdapt, AdapterConfiguration.RECEIVER_SUFFIX, classToAdapt.getAnnotation(AeronQuickReceiver.class).name(),ChannelStreamPerMethodReceiverAdapterWriter::new);
     }
 
