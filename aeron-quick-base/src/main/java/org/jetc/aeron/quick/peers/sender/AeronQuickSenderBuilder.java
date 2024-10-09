@@ -1,4 +1,4 @@
-package org.jetc.aeron.quick.sender;
+package org.jetc.aeron.quick.peers.sender;
 
 import io.aeron.Aeron;
 

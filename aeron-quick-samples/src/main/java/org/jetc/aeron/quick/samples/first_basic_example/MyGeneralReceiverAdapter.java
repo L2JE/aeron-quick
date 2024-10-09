@@ -1,6 +1,6 @@
 package org.jetc.aeron.quick.samples.first_basic_example;
 
-import org.jetc.aeron.quick.server.precompile.ReceiverAdapterBase;
+import org.jetc.aeron.quick.peers.receiver.ReceiverAdapterBase;
 import org.jetc.aeron.quick.messaging.ReceiverBindingProvider;
 import org.jetc.aeron.quick.messaging.fragment_handling.ContextualHandler;
 import org.jetc.aeron.quick.messaging.subscription.SubscriptionMeta;

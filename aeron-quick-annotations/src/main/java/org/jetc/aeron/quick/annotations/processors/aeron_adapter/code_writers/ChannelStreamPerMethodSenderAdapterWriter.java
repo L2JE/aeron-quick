@@ -9,7 +9,7 @@ import java.io.IOException;
 import static org.jetc.aeron.quick.annotations.processors.aeron_adapter.code_writers.AeronDirectBufferOperationsWriter.appendPutValueOnBufferStr;
 
 public class ChannelStreamPerMethodSenderAdapterWriter extends AdapterCodeWriter {
-    private static final String SENDER_ADAPTER_QUALIFIED_NAME = "org.jetc.aeron.quick.sender.SenderAdapterBase";
+    private static final String SENDER_ADAPTER_QUALIFIED_NAME = "org.jetc.aeron.quick.peers.sender.SenderAdapterBase";
     private static final String MAPPER_METHOD_NAME = "serialize";
     private boolean needsJSONMapper = false;
 
@@ -33,7 +33,6 @@ public class ChannelStreamPerMethodSenderAdapterWriter extends AdapterCodeWriter
             import org.agrona.concurrent.SleepingMillisIdleStrategy;
             import org.agrona.concurrent.UnsafeBuffer;
             import org.jetc.aeron.quick.exception.PublicationOfferFailedException;
-            import org.jetc.aeron.quick.sender.SenderAdapterBase;
             import java.nio.ByteOrder;
             import java.time.Duration;
             """

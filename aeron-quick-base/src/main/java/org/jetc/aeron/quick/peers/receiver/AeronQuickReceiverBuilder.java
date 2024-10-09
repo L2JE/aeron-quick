@@ -1,9 +1,8 @@
-package org.jetc.aeron.quick.server;
+package org.jetc.aeron.quick.peers.receiver;
 
 import io.aeron.Aeron;
 import org.jetc.aeron.quick.AeronQuickBuilder;
 import org.jetc.aeron.quick.messaging.ReceiverBindingProvider;
-import org.jetc.aeron.quick.server.precompile.ReceiverAdapterBase;
 
 public class AeronQuickReceiverBuilder<T> extends AeronQuickBuilder<AeronQuickReceiverRunner<T>> {
     private final ReceiverAdapterBase<?> serverEntrypoint;

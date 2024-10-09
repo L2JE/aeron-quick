@@ -1,9 +1,9 @@
-package org.jetc.aeron.quick;
+package org.jetc.aeron.quick.peers;
 
-import io.aeron.Aeron;
 import org.jetc.aeron.quick.annotations.AeronQuickReceiver;
-import org.jetc.aeron.quick.sender.SenderAdapterBase;
-import org.jetc.aeron.quick.server.precompile.ReceiverAdapterBase;
+import org.jetc.aeron.quick.peers.sender.SenderAdapterBase;
+import org.jetc.aeron.quick.peers.receiver.ReceiverAdapterBase;
+
 import java.lang.reflect.InvocationTargetException;
 import java.util.Optional;
 

@@ -1,4 +1,4 @@
-package org.jetc.aeron.quick.server;
+package org.jetc.aeron.quick.peers.receiver;
 
 import io.aeron.Aeron;
 import io.aeron.Subscription;
