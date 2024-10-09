@@ -56,7 +56,6 @@ class AeronQuickReceiverProcessorTest extends JavacTest {
         Assertions.assertEquals(
     """
             package org.jetc.aeron.quick.samples.general;
-            import org.jetc.aeron.quick.server.precompile.ReceiverAdapterBase;
             import org.jetc.aeron.quick.messaging.ReceiverBindingProvider;
             import org.jetc.aeron.quick.messaging.fragment_handling.ContextualHandler;
             import org.jetc.aeron.quick.messaging.subscription.SubscriptionMeta;
@@ -73,7 +72,7 @@ class AeronQuickReceiverProcessorTest extends JavacTest {
             import java.util.List;
             import java.util.Map;
                                     
-            public class AeronQuickGeneralServiceServer_Adapter implements ReceiverAdapterBase<AeronQuickGeneralServiceServer>{
+            public class AeronQuickGeneralServiceServer_Adapter implements org.jetc.aeron.quick.peers.receiver.ReceiverAdapterBase<AeronQuickGeneralServiceServer>{
                 private static final Logger log = LoggerFactory.getLogger(AeronQuickGeneralServiceServer_Adapter.class);
                 private static final String PROPS_SUFFIX = "aeron.quick.";
                 private record Binding(String methodName, int fragmentLimit, ContextualHandler handler){}
@@ -165,7 +164,6 @@ class AeronQuickReceiverProcessorTest extends JavacTest {
         Assertions.assertEquals(
                 """
                         package org.jetc.aeron.quick.samples.general;
-                        import org.jetc.aeron.quick.server.precompile.ReceiverAdapterBase;
                         import org.jetc.aeron.quick.messaging.ReceiverBindingProvider;
                         import org.jetc.aeron.quick.messaging.fragment_handling.ContextualHandler;
                         import org.jetc.aeron.quick.messaging.subscription.SubscriptionMeta;
@@ -182,7 +180,7 @@ class AeronQuickReceiverProcessorTest extends JavacTest {
                         import java.util.List;
                         import java.util.Map;
                                                 
-                        public class AeronQuickGeneralServiceServer_Adapter implements ReceiverAdapterBase<AeronQuickGeneralServiceServer>{
+                        public class AeronQuickGeneralServiceServer_Adapter implements org.jetc.aeron.quick.peers.receiver.ReceiverAdapterBase<AeronQuickGeneralServiceServer>{
                             private static final Logger log = LoggerFactory.getLogger(AeronQuickGeneralServiceServer_Adapter.class);
                             private static final String PROPS_SUFFIX = "aeron.quick.";
                             private record Binding(String methodName, int fragmentLimit, ContextualHandler handler){}
@@ -275,7 +273,6 @@ class AeronQuickReceiverProcessorTest extends JavacTest {
         Assertions.assertEquals(
                 """
                         package org.jetc.aeron.quick.samples.general;
-                        import org.jetc.aeron.quick.server.precompile.ReceiverAdapterBase;
                         import org.jetc.aeron.quick.messaging.ReceiverBindingProvider;
                         import org.jetc.aeron.quick.messaging.fragment_handling.ContextualHandler;
                         import org.jetc.aeron.quick.messaging.subscription.SubscriptionMeta;
@@ -292,7 +289,7 @@ class AeronQuickReceiverProcessorTest extends JavacTest {
                         import java.util.List;
                         import java.util.Map;
                                                 
-                        public class AeronQuickGeneralServiceServer_Adapter implements ReceiverAdapterBase<AeronQuickGeneralServiceServer>{
+                        public class AeronQuickGeneralServiceServer_Adapter implements org.jetc.aeron.quick.peers.receiver.ReceiverAdapterBase<AeronQuickGeneralServiceServer>{
                             private static final Logger log = LoggerFactory.getLogger(AeronQuickGeneralServiceServer_Adapter.class);
                             private static final String PROPS_SUFFIX = "aeron.quick.";
                             private record Binding(String methodName, int fragmentLimit, ContextualHandler handler){}
@@ -384,7 +381,6 @@ class AeronQuickReceiverProcessorTest extends JavacTest {
         Assertions.assertEquals(
                 """
                         package org.jetc.aeron.quick.samples.general;
-                        import org.jetc.aeron.quick.server.precompile.ReceiverAdapterBase;
                         import org.jetc.aeron.quick.messaging.ReceiverBindingProvider;
                         import org.jetc.aeron.quick.messaging.fragment_handling.ContextualHandler;
                         import org.jetc.aeron.quick.messaging.subscription.SubscriptionMeta;
@@ -401,7 +397,7 @@ class AeronQuickReceiverProcessorTest extends JavacTest {
                         import java.util.List;
                         import java.util.Map;
                                                 
-                        public class AeronQuickGeneralServiceServer_Adapter implements ReceiverAdapterBase<AeronQuickGeneralServiceServer>{
+                        public class AeronQuickGeneralServiceServer_Adapter implements org.jetc.aeron.quick.peers.receiver.ReceiverAdapterBase<AeronQuickGeneralServiceServer>{
                             private static final Logger log = LoggerFactory.getLogger(AeronQuickGeneralServiceServer_Adapter.class);
                             private static final String PROPS_SUFFIX = "aeron.quick.";
                             private record Binding(String methodName, int fragmentLimit, ContextualHandler handler){}
@@ -487,7 +483,6 @@ class AeronQuickReceiverProcessorTest extends JavacTest {
         Assertions.assertEquals(
                 """
                         package org.jetc.aeron.quick.samples.general;
-                        import org.jetc.aeron.quick.server.precompile.ReceiverAdapterBase;
                         import org.jetc.aeron.quick.messaging.ReceiverBindingProvider;
                         import org.jetc.aeron.quick.messaging.fragment_handling.ContextualHandler;
                         import org.jetc.aeron.quick.messaging.subscription.SubscriptionMeta;
@@ -504,7 +499,7 @@ class AeronQuickReceiverProcessorTest extends JavacTest {
                         import java.util.List;
                         import java.util.Map;
                                                 
-                        public class AeronQuickGeneralServiceServer_Adapter implements ReceiverAdapterBase<AeronQuickGeneralServiceServer>{
+                        public class AeronQuickGeneralServiceServer_Adapter implements org.jetc.aeron.quick.peers.receiver.ReceiverAdapterBase<AeronQuickGeneralServiceServer>{
                             private static final Logger log = LoggerFactory.getLogger(AeronQuickGeneralServiceServer_Adapter.class);
                             private static final String PROPS_SUFFIX = "aeron.quick.";
                             private record Binding(String methodName, int fragmentLimit, ContextualHandler handler){}
@@ -591,7 +586,6 @@ class AeronQuickReceiverProcessorTest extends JavacTest {
         Assertions.assertEquals(
                 """
                         package org.jetc.aeron.quick.samples.general;
-                        import org.jetc.aeron.quick.server.precompile.ReceiverAdapterBase;
                         import org.jetc.aeron.quick.messaging.ReceiverBindingProvider;
                         import org.jetc.aeron.quick.messaging.fragment_handling.ContextualHandler;
                         import org.jetc.aeron.quick.messaging.subscription.SubscriptionMeta;
@@ -608,7 +602,7 @@ class AeronQuickReceiverProcessorTest extends JavacTest {
                         import java.util.List;
                         import java.util.Map;
                                                 
-                        public class AeronQuickGeneralServiceServer_Adapter implements ReceiverAdapterBase<AeronQuickGeneralServiceServer>{
+                        public class AeronQuickGeneralServiceServer_Adapter implements org.jetc.aeron.quick.peers.receiver.ReceiverAdapterBase<AeronQuickGeneralServiceServer>{
                             private static final Logger log = LoggerFactory.getLogger(AeronQuickGeneralServiceServer_Adapter.class);
                             private static final String PROPS_SUFFIX = "aeron.quick.";
                             private record Binding(String methodName, int fragmentLimit, ContextualHandler handler){}
@@ -707,7 +701,6 @@ class AeronQuickReceiverProcessorTest extends JavacTest {
         Assertions.assertEquals(
                 """
                         package org.jetc.aeron.quick.samples.general;
-                        import org.jetc.aeron.quick.server.precompile.ReceiverAdapterBase;
                         import org.jetc.aeron.quick.messaging.ReceiverBindingProvider;
                         import org.jetc.aeron.quick.messaging.fragment_handling.ContextualHandler;
                         import org.jetc.aeron.quick.messaging.subscription.SubscriptionMeta;
@@ -724,7 +717,7 @@ class AeronQuickReceiverProcessorTest extends JavacTest {
                         import java.util.List;
                         import java.util.Map;
                                                 
-                        public class AeronQuickGeneralServiceServer_Adapter implements ReceiverAdapterBase<AeronQuickGeneralServiceServer>{
+                        public class AeronQuickGeneralServiceServer_Adapter implements org.jetc.aeron.quick.peers.receiver.ReceiverAdapterBase<AeronQuickGeneralServiceServer>{
                             private static final Logger log = LoggerFactory.getLogger(AeronQuickGeneralServiceServer_Adapter.class);
                             private static final String PROPS_SUFFIX = "aeron.quick.";
                             private record Binding(String methodName, int fragmentLimit, ContextualHandler handler){}
@@ -807,7 +800,6 @@ class AeronQuickReceiverProcessorTest extends JavacTest {
         Assertions.assertEquals(
                 """
                         package org.jetc.aeron.quick.samples.general;
-                        import org.jetc.aeron.quick.server.precompile.ReceiverAdapterBase;
                         import org.jetc.aeron.quick.messaging.ReceiverBindingProvider;
                         import org.jetc.aeron.quick.messaging.fragment_handling.ContextualHandler;
                         import org.jetc.aeron.quick.messaging.subscription.SubscriptionMeta;
@@ -824,7 +816,7 @@ class AeronQuickReceiverProcessorTest extends JavacTest {
                         import java.util.List;
                         import java.util.Map;
                                                 
-                        public class AeronQuickGeneralServiceServer_Adapter implements ReceiverAdapterBase<AeronQuickGeneralServiceServer>{
+                        public class AeronQuickGeneralServiceServer_Adapter implements org.jetc.aeron.quick.peers.receiver.ReceiverAdapterBase<AeronQuickGeneralServiceServer>{
                             private static final Logger log = LoggerFactory.getLogger(AeronQuickGeneralServiceServer_Adapter.class);
                             private static final String PROPS_SUFFIX = "aeron.quick.";
                             private record Binding(String methodName, int fragmentLimit, ContextualHandler handler){}

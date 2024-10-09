@@ -1,4 +1,4 @@
-package org.jetc.aeron.quick.server;
+package org.jetc.aeron.quick.peers.receiver;
 
 import org.agrona.ErrorHandler;
 import org.agrona.concurrent.AgentRunner;

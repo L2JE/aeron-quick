@@ -3,7 +3,7 @@ package org.jetc.aeron.quick.samples.annotation_receiver_and_sender;
 import org.agrona.concurrent.SleepingMillisIdleStrategy;
 import org.jetc.aeron.quick.AeronQuickFactory;
 import org.jetc.aeron.quick.annotations.AeronQuickReceiver;
-import org.jetc.aeron.quick.server.AeronQuickReceiverRunner;
+import org.jetc.aeron.quick.peers.receiver.AeronQuickReceiverRunner;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import java.time.Duration;

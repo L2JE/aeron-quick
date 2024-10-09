@@ -1,4 +1,4 @@
-package org.jetc.aeron.quick.server.precompile;
+package org.jetc.aeron.quick.peers.receiver;
 
 import org.jetc.aeron.quick.messaging.ReceiverBindingProvider;
 

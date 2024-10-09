@@ -11,7 +11,7 @@ import static org.jetc.aeron.quick.annotations.processors.aeron_adapter.code_wri
 import static org.jetc.aeron.quick.annotations.processors.utils.FullyQualifiedClassNames.STRING_TYPE;
 
 public class ChannelStreamPerMethodReceiverAdapterWriter extends AdapterCodeWriter {
-    private static final String ADAPTER_BASE_CLASS_NAME = "ReceiverAdapterBase";
+    private static final String RECEIVER_ADAPTER_QUALIFIED_NAME = "org.jetc.aeron.quick.peers.receiver.ReceiverAdapterBase";
     private static final int DEFAULT_FRAGMENT_LIMIT = 3;
     private static final String CONTEXTUAL_HANDLER_1ST_LINE = "aeron -> (DirectBuffer buffer, int offset, int length, Header header) -> {";
     private static final String DEFAULT_SERVER_PARAM_NAME = "server";
@@ -28,8 +28,6 @@ public class ChannelStreamPerMethodReceiverAdapterWriter extends AdapterCodeWrit
     @Override
     public void generateAdapterCode() throws IOException {
         append("package ").append(String.valueOf(elementPackage.getQualifiedName())).append(";");
-        newLine();
-        append("import org.jetc.aeron.quick.server.precompile.").append(ADAPTER_BASE_CLASS_NAME).append(";");
         newLine();
         append("""
                 import org.jetc.aeron.quick.messaging.ReceiverBindingProvider;
@@ -49,7 +47,7 @@ public class ChannelStreamPerMethodReceiverAdapterWriter extends AdapterCodeWrit
                 import java.util.Map;
                 """);
         newLine();
-        append("public class ").append(config.finalAdapterName()).append(" implements ").append(ADAPTER_BASE_CLASS_NAME + "<").append(config.classToAdaptName()).append(">").append("{");
+        append("public class ").append(config.finalAdapterName()).append(" implements ").append(RECEIVER_ADAPTER_QUALIFIED_NAME + "<").append(config.classToAdaptName()).append(">").append("{");
         startBlock();
         append("    private static final Logger log = LoggerFactory.getLogger(").append(config.finalAdapterName()).append(".class);");
         newLine();
