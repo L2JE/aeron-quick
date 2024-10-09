@@ -53,16 +53,22 @@ public class ChannelStreamPerMethodReceiverAdapterWriter extends AdapterCodeWrit
         startBlock();
         append("    private static final Logger log = LoggerFactory.getLogger(").append(config.finalAdapterName()).append(".class);");
         newLine();
-        append("    private static final String PROPS_SUFFIX = \"aeron.quick.").append(config.propertiesRootName()).append(".\";");
+        append("    private static final String PROPS_SUFFIX = \"aeron.quick.\";");
         newLine();
         append("""
                     private record Binding(String methodName, int fragmentLimit, ContextualHandler handler){}
                     private final List<Binding> bindingsToCompute;
+                    private String receiverName;
                 
-                    private static String getPropForMethod(String method, String prop){
-                            String value = System.getProperty(PROPS_SUFFIX + method + "." + prop);
+                    @Override
+                    public void init(String name) {
+                       receiverName = name;
+                    }
+                
+                    private static String getPropForMethod(String componentName, String method, String prop){
+                            String value = System.getProperty(PROPS_SUFFIX + componentName + "." + method + "." + prop);
                             if(value == null || value.isBlank())
-                                value = System.getProperty(PROPS_SUFFIX + prop);
+                                value = System.getProperty(PROPS_SUFFIX + componentName + "." + prop);
                             return value;
                     }
                 
@@ -72,8 +78,8 @@ public class ChannelStreamPerMethodReceiverAdapterWriter extends AdapterCodeWrit
             
                         for (Binding binding : this.bindingsToCompute){
                             boolean isRepeatedBinding = computedBindings.setBinding(
-                                    getPropForMethod(binding.methodName() ,"channel"),
-                                    Integer.parseInt(getPropForMethod(binding.methodName(), "stream")),
+                                    getPropForMethod(receiverName, binding.methodName() ,"channel"),
+                                    Integer.parseInt(getPropForMethod(receiverName, binding.methodName(), "stream")),
                                     new SubscriptionMeta(binding.handler(), binding.fragmentLimit())
                             ) != null;
             

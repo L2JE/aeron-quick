@@ -63,6 +63,12 @@ public class MyGeneralReceiverAdapter implements ReceiverAdapterBase<MyGeneralRe
 
         return computedBindings;
     }
+
+    @Override
+    public void init(String name) {
+
+    }
+
     private static final ObjectMapper mapper = new ObjectMapper();
 
     private static <T> T mapToObject(String content, Class<T> targetClass){

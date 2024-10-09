@@ -7,18 +7,29 @@ import org.jetc.aeron.quick.server.precompile.ReceiverAdapterBase;
 
 public class AeronQuickReceiverBuilder<T> extends AeronQuickBuilder<AeronQuickReceiverRunner<T>> {
     private final ReceiverAdapterBase<?> serverEntrypoint;
+    private String receiverName;
 
-    public <E extends T> AeronQuickReceiverBuilder(ReceiverAdapterBase<E> serverEntrypoint, Class<T> contract, Aeron aeron) {
-        super(aeron);
+    public <E extends T> AeronQuickReceiverBuilder(ReceiverAdapterBase<E> serverEntrypoint) {
         this.serverEntrypoint = serverEntrypoint;
     }
 
     public ReceiverBindingProvider getReceiverBindingsProvider(){
-        return this.serverEntrypoint.getBindings();
+        return serverEntrypoint.getBindings();
     }
 
     @Override
     public AeronQuickReceiverRunner<T> build() {
-        return new AeronQuickReceiverRunner<>(this.aeron, getReceiverBindingsProvider(), getAgentIdleStrategy(), getAgentErrorHandler(), getAgentErrorCounter());
+        serverEntrypoint.init(receiverName);
+        return new AeronQuickReceiverRunner<>(aeron, getReceiverBindingsProvider(), getAgentIdleStrategy(), getAgentErrorHandler(), getAgentErrorCounter());
+    }
+
+    public AeronQuickReceiverBuilder<T> setReceiverName(String receiverName) {
+        this.receiverName = receiverName;
+        return this;
+    }
+
+    public AeronQuickReceiverBuilder<T> setAeron(Aeron aeron) {
+        this.aeron = aeron;
+        return this;
     }
 }

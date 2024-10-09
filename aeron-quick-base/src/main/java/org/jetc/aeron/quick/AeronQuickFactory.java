@@ -54,16 +54,17 @@ public class AeronQuickFactory implements AutoCloseable{
      * @param <T> Any class marked with {@link org.jetc.aeron.quick.annotations.AeronQuickReceiver @AeronQuickReceiver}
      * @throws SetupNotReadyException if Aeron client is not connected
      */
-    public <T> Optional<AeronQuickReceiverBuilder<T>> getReceiverBuilder(T targetServer) throws AeronException {
+    public <T> Optional<AeronQuickReceiverBuilder<T>> getReceiverBuilder(T targetServer, String receiverName) throws AeronException {
         return this.getReceiverBuilder(
-            Adapters.adaptReceiver(targetServer).orElseThrow(() -> new IllegalStateException("No Adapter class could be loaded for: " + targetServer.getClass().getCanonicalName()))
+            Adapters.adaptReceiver(targetServer).orElseThrow(() -> new IllegalStateException("No Adapter class could be loaded for: " + targetServer.getClass().getCanonicalName())),
+            receiverName
         );
     }
 
-    public <T> Optional<AeronQuickReceiverBuilder<T>> getReceiverBuilder(ReceiverAdapterBase<T> serverEntrypoint){
+    public <T> Optional<AeronQuickReceiverBuilder<T>> getReceiverBuilder(ReceiverAdapterBase<T> serverEntrypoint, String receiverName){
         try {
             assertFactoryIsReady();
-            return Optional.of(new AeronQuickReceiverBuilder<>(serverEntrypoint, null, this.aeron));
+            return Optional.of(new AeronQuickReceiverBuilder<>(serverEntrypoint).setReceiverName(receiverName).setAeron(aeron));
         } catch (Exception error) {
             log.error("Could not create a receiver builder: ", error);
         }
@@ -75,18 +76,18 @@ public class AeronQuickFactory implements AutoCloseable{
      * {@link org.jetc.aeron.quick.annotations.AeronQuickContract @AeronQuickContract} or at least has one method
      * annotated with {@link org.jetc.aeron.quick.annotations.QuickContractEndpoint @QuickContractEndpoint}
      * <p>
-     * @param clientName used to find configuration properties at
+     * @param senderName used to find configuration properties at
      * <p>
-     * {@code aeron.quick.<clientName>} eg:
+     * {@code aeron.quick.<senderName>} eg:
      * <p>
-     * {@code aeron.quick.sampleClient.methodName.channel = aeron:udp?endpoint=localhost:20121}
+     * {@code aeron.quick.sampleSender.methodName.channel = aeron:udp?endpoint=localhost:20121}
      * @return a client implementing the given contract, so calling a method in the client results in sending a message through Aeron
      */
-    public <T> Optional<AeronQuickSenderBuilder<T>> getSenderBuilder(Class<T> contract, String clientName){
+    public <T> Optional<AeronQuickSenderBuilder<T>> getSenderBuilder(Class<T> contract, String senderName){
         return Optional.of(
             new AeronQuickSenderBuilder<>(
                 Adapters.adaptSender(contract).orElseThrow(() -> new IllegalStateException("No Adapter class could be loaded for: " + contract.getCanonicalName()))
-            ).setClientName(clientName).setAeron(aeron)
+            ).setSenderName(senderName).setAeron(aeron)
         );
     }
 

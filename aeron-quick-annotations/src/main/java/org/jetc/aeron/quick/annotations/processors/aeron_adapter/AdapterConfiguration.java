@@ -12,14 +12,12 @@ public class AdapterConfiguration {
     private final String finalAdapterName;
     private final String classToAdaptName;
     private final List<AdaptableMethod> methodsToAdapt;
-    private final String adapterCfgName;
 
     public AdapterConfiguration(TypeElement classToAdapt, String finalAdapterName, String classToAdaptName, List<AdaptableMethod> methodsToAdapt, String adapterCfgName) {
         this.classToAdapt = classToAdapt;
         this.finalAdapterName = finalAdapterName;
         this.classToAdaptName = classToAdaptName;
         this.methodsToAdapt = methodsToAdapt;
-        this.adapterCfgName = adapterCfgName;
     }
 
     public String finalAdapterName() {
@@ -40,9 +38,5 @@ public class AdapterConfiguration {
 
     public List<AdaptableMethod> methodsToAdapt() {
         return methodsToAdapt;
-    }
-
-    public String propertiesRootName(){
-        return adapterCfgName;
     }
 }
