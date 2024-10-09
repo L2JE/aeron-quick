@@ -12,10 +12,6 @@ public abstract class AeronQuickBuilder<R> {
     protected ErrorHandler agentErrorHandler;
     protected AtomicCounter agentErrorCounter;
 
-    protected AeronQuickBuilder(Aeron aeron){
-        this.aeron = aeron;
-    }
-
     public ErrorHandler getAgentErrorHandler(){
         if(agentErrorHandler == null)
             agentErrorHandler = Throwable::printStackTrace;

@@ -15,11 +15,6 @@ import java.lang.annotation.Target;
 @Retention(RetentionPolicy.RUNTIME)
 public @interface AeronQuickReceiver {
     /**
-     * receiver name where to look for properties
-     */
-    String name();
-
-    /**
      * If not defined it is assumed that the class is a direct implementor of an interface/class that has methods annotated with {@link QuickContractEndpoint}
      */
     Class<?> contract() default NullType.class;

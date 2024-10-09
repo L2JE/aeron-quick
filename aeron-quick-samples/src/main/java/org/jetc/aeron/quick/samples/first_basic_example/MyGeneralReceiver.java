@@ -16,7 +16,7 @@ public class MyGeneralReceiver {
     public static void main(String[] args) throws InterruptedException {
         log.warn("STARTING SERVER FROM ");
 
-        factory.getReceiverBuilder(new MyGeneralReceiverAdapter(new MyGeneralReceiver())).ifPresent( builder -> {
+        factory.getReceiverBuilder(new MyGeneralReceiverAdapter(new MyGeneralReceiver()), "").ifPresent( builder -> {
             serverRunner = builder
                     .setAgentIdleStrategy(new SleepingMillisIdleStrategy(1000 * 2))
                     .build();

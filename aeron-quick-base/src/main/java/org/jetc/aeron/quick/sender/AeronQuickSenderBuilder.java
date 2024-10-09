@@ -16,7 +16,7 @@ public class AeronQuickSenderBuilder<T> {
         return adaptedContract.getClient();
     }
 
-    public AeronQuickSenderBuilder<T> setClientName(String clientName) {
+    public AeronQuickSenderBuilder<T> setSenderName(String clientName) {
         this.clientName = clientName;
         return this;
     }
