@@ -22,12 +22,13 @@ import java.util.Optional;
  */
 public class AeronQuickFactory implements AutoCloseable{
     private static final Logger log = LoggerFactory.getLogger(AeronQuickFactory.class);
-
-    private Aeron aeron;
     private final Aeron.Context aeronContext;
     private final MediaDriver driver;
+    private final AeronQuickContext context;
 
     private AeronQuickFactory(Aeron.Context aeronContext, MediaDriver.Context driverContext, boolean clientConnected){
+        this.context = new AeronQuickContext();
+
         if(driverContext != null){
             driver = MediaDriver.launch(driverContext);
             aeronContext.aeronDirectoryName(driverContext.aeronDirectoryName());
@@ -35,17 +36,15 @@ public class AeronQuickFactory implements AutoCloseable{
             driver = null;
 
         if(clientConnected)
-            aeron = Aeron.connect(aeronContext);
-        else
-            aeron = null;
+            this.context.setAeron(Aeron.connect(aeronContext));
 
         this.aeronContext = aeronContext;
         log.warn("Preparing Aeron with driver at directory: %s".formatted(aeronContext.aeronDirectoryName()));
     }
 
     public void connectClient(){
-        if(aeron == null || aeron.isClosed())
-            aeron = Aeron.connect(aeronContext);
+        if(this.context.getAeron() == null || this.context.getAeron().isClosed())
+            this.context.setAeron(Aeron.connect(aeronContext));
     }
 
     /**
@@ -65,7 +64,7 @@ public class AeronQuickFactory implements AutoCloseable{
     public <T> Optional<AeronQuickReceiverBuilder<T>> getReceiverBuilder(ReceiverAdapterBase<T> serverEntrypoint, String receiverName){
         try {
             assertFactoryIsReady();
-            return Optional.of(new AeronQuickReceiverBuilder<>(serverEntrypoint).setReceiverName(receiverName).setAeron(aeron));
+            return Optional.of(new AeronQuickReceiverBuilder<>(serverEntrypoint, context).setReceiverName(receiverName));
         } catch (Exception error) {
             log.error("Could not create a receiver builder: ", error);
         }
@@ -87,8 +86,9 @@ public class AeronQuickFactory implements AutoCloseable{
     public <T> Optional<AeronQuickSenderBuilder<T>> getSenderBuilder(Class<T> contract, String senderName){
         return Optional.of(
             new AeronQuickSenderBuilder<>(
-                Adapters.adaptSender(contract).orElseThrow(() -> new IllegalStateException("No Adapter class could be loaded for: " + contract.getCanonicalName()))
-            ).setSenderName(senderName).setAeron(aeron)
+                Adapters.adaptSender(contract).orElseThrow(() -> new IllegalStateException("No Adapter class could be loaded for: " + contract.getCanonicalName())),
+                context
+            ).setSenderName(senderName)
         );
     }
 
@@ -104,11 +104,11 @@ public class AeronQuickFactory implements AutoCloseable{
      */
     @Override
     public void close() {
-        CloseHelper.closeAll(aeron, driver);
+        CloseHelper.closeAll(this.context.getAeron(), driver);
     }
 
     private void assertFactoryIsReady(){
-        if(aeron == null || aeron.isClosed())
+        if(this.context.getAeron() == null || this.context.getAeron().isClosed())
             throw new SetupNotReadyException("Aeron client is not connected", AeronException.Category.FATAL);
     }
 

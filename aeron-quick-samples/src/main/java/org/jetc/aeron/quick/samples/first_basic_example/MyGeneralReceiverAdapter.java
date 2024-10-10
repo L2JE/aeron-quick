@@ -1,7 +1,8 @@
 package org.jetc.aeron.quick.samples.first_basic_example;
 
+import org.jetc.aeron.quick.AeronQuickContext;
+import org.jetc.aeron.quick.messaging.ReceiverBindingToAeronBindingMapper;
 import org.jetc.aeron.quick.peers.receiver.ReceiverAdapterBase;
-import org.jetc.aeron.quick.messaging.ReceiverBindingProvider;
 import org.jetc.aeron.quick.messaging.fragment_handling.ContextualHandler;
 import org.jetc.aeron.quick.messaging.subscription.SubscriptionMeta;
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -33,6 +34,13 @@ public class MyGeneralReceiverAdapter implements ReceiverAdapterBase<MyGeneralRe
             "aeron.quick.generalReceiver.duplicateNumber.stream", DUPLICATE_NUMBER_STREAM.toString()
     );
     private static final Logger log = LoggerFactory.getLogger(MyGeneralReceiverAdapter.class);
+
+    @Override
+    public void setContext(AeronQuickContext context, String componentName) {
+
+    }
+
+
     private record Binding(String methodName, int fragmentLimit, ContextualHandler handler){}
     private final List<Binding> bindingsToCompute;
     private static final String PROPS_SUFFIX = "aeron.quick.generalReceiver.";
@@ -47,8 +55,8 @@ public class MyGeneralReceiverAdapter implements ReceiverAdapterBase<MyGeneralRe
     }
 
     @Override
-    public ReceiverBindingProvider getBindings() {
-        ReceiverBindingProvider computedBindings = new ReceiverBindingProvider(new HashMap<>());
+    public ReceiverBindingToAeronBindingMapper getBindings() {
+        ReceiverBindingToAeronBindingMapper computedBindings = new ReceiverBindingToAeronBindingMapper(new HashMap<>());
 
         for (Binding binding : this.bindingsToCompute){
             boolean isRepeatedBinding = computedBindings.setBinding(
@@ -62,11 +70,6 @@ public class MyGeneralReceiverAdapter implements ReceiverAdapterBase<MyGeneralRe
         }
 
         return computedBindings;
-    }
-
-    @Override
-    public void init(String name) {
-
     }
 
     private static final ObjectMapper mapper = new ObjectMapper();

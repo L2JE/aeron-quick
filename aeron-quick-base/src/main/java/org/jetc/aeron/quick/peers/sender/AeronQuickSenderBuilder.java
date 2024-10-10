@@ -1,28 +1,24 @@
 package org.jetc.aeron.quick.peers.sender;
 
-import io.aeron.Aeron;
+import org.jetc.aeron.quick.AeronQuickContext;
 
 public class AeronQuickSenderBuilder<T> {
     private final SenderAdapterBase<T> adaptedContract;
     private String clientName;
-    private Aeron aeron;
+    private final AeronQuickContext context;
 
-    public AeronQuickSenderBuilder(SenderAdapterBase<T> adaptedContract) {
+    public AeronQuickSenderBuilder(SenderAdapterBase<T> adaptedContract, AeronQuickContext context) {
         this.adaptedContract = adaptedContract;
+        this.context = context;
     }
 
     public T build(){
-        adaptedContract.initSender(aeron, clientName);
+        adaptedContract.setContext(context, clientName);
         return adaptedContract.getClient();
     }
 
     public AeronQuickSenderBuilder<T> setSenderName(String clientName) {
         this.clientName = clientName;
-        return this;
-    }
-
-    public AeronQuickSenderBuilder<T> setAeron(Aeron aeron) {
-        this.aeron = aeron;
         return this;
     }
 }

@@ -56,7 +56,10 @@ class AeronQuickReceiverProcessorTest extends JavacTest {
         Assertions.assertEquals(
     """
             package org.jetc.aeron.quick.samples.general;
-            import org.jetc.aeron.quick.messaging.ReceiverBindingProvider;
+            import org.jetc.aeron.quick.messaging.ReceiverBindingToAeronBindingMapper;
+            import org.jetc.aeron.quick.messaging.serialization.ObjectStringMapper;
+            import org.jetc.aeron.quick.peers.receiver.ReceiverBinding;
+            import org.jetc.aeron.quick.AeronQuickContext;
             import org.jetc.aeron.quick.messaging.fragment_handling.ContextualHandler;
             import org.jetc.aeron.quick.messaging.subscription.SubscriptionMeta;
             import io.aeron.Publication;
@@ -74,36 +77,31 @@ class AeronQuickReceiverProcessorTest extends JavacTest {
                                     
             public class AeronQuickGeneralServiceServer_Adapter implements org.jetc.aeron.quick.peers.receiver.ReceiverAdapterBase<AeronQuickGeneralServiceServer>{
                 private static final Logger log = LoggerFactory.getLogger(AeronQuickGeneralServiceServer_Adapter.class);
-                private static final String PROPS_SUFFIX = "aeron.quick.";
-                private record Binding(String methodName, int fragmentLimit, ContextualHandler handler){}
-                private final List<Binding> bindingsToCompute;
+                private final List<ReceiverBinding> bindingsToCompute;
                 private String receiverName;
-            
+                private AeronQuickContext context;
+                private ObjectStringMapper mapper;
+                
                 @Override
-                public void init(String name) {
-                   receiverName = name;
-                }
-                                    
-                private static String getPropForMethod(String componentName, String method, String prop){
-                        String value = System.getProperty(PROPS_SUFFIX + componentName + "." + method + "." + prop);
-                        if(value == null || value.isBlank())
-                            value = System.getProperty(PROPS_SUFFIX + componentName + "." + prop);
-                        return value;
+                public void setContext(AeronQuickContext context, String componentName) {
+                    receiverName = componentName;
+                    this.context = context;
+                    mapper = context.getObjectMapper();
                 }
                                     
                 @Override
-                public ReceiverBindingProvider getBindings() {
-                    ReceiverBindingProvider computedBindings = new ReceiverBindingProvider(new HashMap<>());
+                public ReceiverBindingToAeronBindingMapper getBindings() {
+                    ReceiverBindingToAeronBindingMapper computedBindings = new ReceiverBindingToAeronBindingMapper(new HashMap<>());
                                     
-                    for (Binding binding : this.bindingsToCompute){
+                    for (ReceiverBinding binding : this.bindingsToCompute){
                         boolean isRepeatedBinding = computedBindings.setBinding(
-                                getPropForMethod(receiverName, binding.methodName() ,"channel"),
-                                Integer.parseInt(getPropForMethod(receiverName, binding.methodName(), "stream")),
+                                context.getProperty(receiverName, binding.methodName() ,"channel"),
+                                context.getIntProperty(receiverName, binding.methodName(), "stream"),
                                 new SubscriptionMeta(binding.handler(), binding.fragmentLimit())
                         ) != null;
                                     
                         if(isRepeatedBinding)
-                            throw new IllegalStateException("Only unique channel-stream pairs are allowed. Check properties for: %s".formatted(PROPS_SUFFIX + binding.methodName()));
+                            throw new IllegalStateException("Only unique channel-stream pairs are allowed. Check properties for: %s.%s".formatted(receiverName, binding.methodName()));
                     }
                                     
                     return computedBindings;
@@ -111,7 +109,7 @@ class AeronQuickReceiverProcessorTest extends JavacTest {
                 public AeronQuickGeneralServiceServer_Adapter(AeronQuickGeneralServiceServer server){
                     MutableDirectBuffer rspBuffer = new ExpandableDirectByteBuffer(256);
                     bindingsToCompute = List.of(
-                        new Binding(
+                        new ReceiverBinding(
                             "notifyOperationDone",
                             3,
                             aeron -> (DirectBuffer buffer, int offset, int length, Header header) -> {
@@ -164,7 +162,10 @@ class AeronQuickReceiverProcessorTest extends JavacTest {
         Assertions.assertEquals(
                 """
                         package org.jetc.aeron.quick.samples.general;
-                        import org.jetc.aeron.quick.messaging.ReceiverBindingProvider;
+                        import org.jetc.aeron.quick.messaging.ReceiverBindingToAeronBindingMapper;
+                        import org.jetc.aeron.quick.messaging.serialization.ObjectStringMapper;
+                        import org.jetc.aeron.quick.peers.receiver.ReceiverBinding;
+                        import org.jetc.aeron.quick.AeronQuickContext;
                         import org.jetc.aeron.quick.messaging.fragment_handling.ContextualHandler;
                         import org.jetc.aeron.quick.messaging.subscription.SubscriptionMeta;
                         import io.aeron.Publication;
@@ -182,36 +183,31 @@ class AeronQuickReceiverProcessorTest extends JavacTest {
                                                 
                         public class AeronQuickGeneralServiceServer_Adapter implements org.jetc.aeron.quick.peers.receiver.ReceiverAdapterBase<AeronQuickGeneralServiceServer>{
                             private static final Logger log = LoggerFactory.getLogger(AeronQuickGeneralServiceServer_Adapter.class);
-                            private static final String PROPS_SUFFIX = "aeron.quick.";
-                            private record Binding(String methodName, int fragmentLimit, ContextualHandler handler){}
-                            private final List<Binding> bindingsToCompute;
+                            private final List<ReceiverBinding> bindingsToCompute;
                             private String receiverName;
-                        
+                            private AeronQuickContext context;
+                            private ObjectStringMapper mapper;
+                
                             @Override
-                            public void init(String name) {
-                               receiverName = name;
-                            }
-                                                
-                            private static String getPropForMethod(String componentName, String method, String prop){
-                                    String value = System.getProperty(PROPS_SUFFIX + componentName + "." + method + "." + prop);
-                                    if(value == null || value.isBlank())
-                                        value = System.getProperty(PROPS_SUFFIX + componentName + "." + prop);
-                                    return value;
+                            public void setContext(AeronQuickContext context, String componentName) {
+                                receiverName = componentName;
+                                this.context = context;
+                                mapper = context.getObjectMapper();
                             }
                                                 
                             @Override
-                            public ReceiverBindingProvider getBindings() {
-                                ReceiverBindingProvider computedBindings = new ReceiverBindingProvider(new HashMap<>());
+                            public ReceiverBindingToAeronBindingMapper getBindings() {
+                                ReceiverBindingToAeronBindingMapper computedBindings = new ReceiverBindingToAeronBindingMapper(new HashMap<>());
                                                 
-                                for (Binding binding : this.bindingsToCompute){
+                                for (ReceiverBinding binding : this.bindingsToCompute){
                                     boolean isRepeatedBinding = computedBindings.setBinding(
-                                            getPropForMethod(receiverName, binding.methodName() ,"channel"),
-                                            Integer.parseInt(getPropForMethod(receiverName, binding.methodName(), "stream")),
+                                            context.getProperty(receiverName, binding.methodName() ,"channel"),
+                                            context.getIntProperty(receiverName, binding.methodName(), "stream"),
                                             new SubscriptionMeta(binding.handler(), binding.fragmentLimit())
                                     ) != null;
                                                 
                                     if(isRepeatedBinding)
-                                        throw new IllegalStateException("Only unique channel-stream pairs are allowed. Check properties for: %s".formatted(PROPS_SUFFIX + binding.methodName()));
+                                        throw new IllegalStateException("Only unique channel-stream pairs are allowed. Check properties for: %s.%s".formatted(receiverName, binding.methodName()));
                                 }
                                                 
                                 return computedBindings;
@@ -219,7 +215,7 @@ class AeronQuickReceiverProcessorTest extends JavacTest {
                             public AeronQuickGeneralServiceServer_Adapter(AeronQuickGeneralServiceServer server){
                                 MutableDirectBuffer rspBuffer = new ExpandableDirectByteBuffer(256);
                                 bindingsToCompute = List.of(
-                                    new Binding(
+                                    new ReceiverBinding(
                                         "notifyOperationDone",
                                         3,
                                         aeron -> (DirectBuffer buffer, int offset, int length, Header header) -> {
@@ -228,7 +224,7 @@ class AeronQuickReceiverProcessorTest extends JavacTest {
                                             server.notifyOperationDone(param0, param1);
                                         }
                                     ),
-                                    new Binding(
+                                    new ReceiverBinding(
                                         "otherAdaptedMethod",
                                         3,
                                         aeron -> (DirectBuffer buffer, int offset, int length, Header header) -> {
@@ -273,7 +269,10 @@ class AeronQuickReceiverProcessorTest extends JavacTest {
         Assertions.assertEquals(
                 """
                         package org.jetc.aeron.quick.samples.general;
-                        import org.jetc.aeron.quick.messaging.ReceiverBindingProvider;
+                        import org.jetc.aeron.quick.messaging.ReceiverBindingToAeronBindingMapper;
+                        import org.jetc.aeron.quick.messaging.serialization.ObjectStringMapper;
+                        import org.jetc.aeron.quick.peers.receiver.ReceiverBinding;
+                        import org.jetc.aeron.quick.AeronQuickContext;
                         import org.jetc.aeron.quick.messaging.fragment_handling.ContextualHandler;
                         import org.jetc.aeron.quick.messaging.subscription.SubscriptionMeta;
                         import io.aeron.Publication;
@@ -291,36 +290,31 @@ class AeronQuickReceiverProcessorTest extends JavacTest {
                                                 
                         public class AeronQuickGeneralServiceServer_Adapter implements org.jetc.aeron.quick.peers.receiver.ReceiverAdapterBase<AeronQuickGeneralServiceServer>{
                             private static final Logger log = LoggerFactory.getLogger(AeronQuickGeneralServiceServer_Adapter.class);
-                            private static final String PROPS_SUFFIX = "aeron.quick.";
-                            private record Binding(String methodName, int fragmentLimit, ContextualHandler handler){}
-                            private final List<Binding> bindingsToCompute;
+                            private final List<ReceiverBinding> bindingsToCompute;
                             private String receiverName;
-                        
+                            private AeronQuickContext context;
+                            private ObjectStringMapper mapper;
+                
                             @Override
-                            public void init(String name) {
-                               receiverName = name;
-                            }
-                                                
-                            private static String getPropForMethod(String componentName, String method, String prop){
-                                    String value = System.getProperty(PROPS_SUFFIX + componentName + "." + method + "." + prop);
-                                    if(value == null || value.isBlank())
-                                        value = System.getProperty(PROPS_SUFFIX + componentName + "." + prop);
-                                    return value;
+                            public void setContext(AeronQuickContext context, String componentName) {
+                                receiverName = componentName;
+                                this.context = context;
+                                mapper = context.getObjectMapper();
                             }
                                                 
                             @Override
-                            public ReceiverBindingProvider getBindings() {
-                                ReceiverBindingProvider computedBindings = new ReceiverBindingProvider(new HashMap<>());
+                            public ReceiverBindingToAeronBindingMapper getBindings() {
+                                ReceiverBindingToAeronBindingMapper computedBindings = new ReceiverBindingToAeronBindingMapper(new HashMap<>());
                                                 
-                                for (Binding binding : this.bindingsToCompute){
+                                for (ReceiverBinding binding : this.bindingsToCompute){
                                     boolean isRepeatedBinding = computedBindings.setBinding(
-                                            getPropForMethod(receiverName, binding.methodName() ,"channel"),
-                                            Integer.parseInt(getPropForMethod(receiverName, binding.methodName(), "stream")),
+                                            context.getProperty(receiverName, binding.methodName() ,"channel"),
+                                            context.getIntProperty(receiverName, binding.methodName(), "stream"),
                                             new SubscriptionMeta(binding.handler(), binding.fragmentLimit())
                                     ) != null;
                                                 
                                     if(isRepeatedBinding)
-                                        throw new IllegalStateException("Only unique channel-stream pairs are allowed. Check properties for: %s".formatted(PROPS_SUFFIX + binding.methodName()));
+                                        throw new IllegalStateException("Only unique channel-stream pairs are allowed. Check properties for: %s.%s".formatted(receiverName, binding.methodName()));
                                 }
                                                 
                                 return computedBindings;
@@ -328,7 +322,7 @@ class AeronQuickReceiverProcessorTest extends JavacTest {
                             public AeronQuickGeneralServiceServer_Adapter(AeronQuickGeneralServiceServer server){
                                 MutableDirectBuffer rspBuffer = new ExpandableDirectByteBuffer(256);
                                 bindingsToCompute = List.of(
-                                    new Binding(
+                                    new ReceiverBinding(
                                         "notifyOperationDone",
                                         3,
                                         aeron -> (DirectBuffer buffer, int offset, int length, Header header) -> {
@@ -337,7 +331,7 @@ class AeronQuickReceiverProcessorTest extends JavacTest {
                                             server.notifyOperationDone(param0, param1);
                                         }
                                     ),
-                                    new Binding(
+                                    new ReceiverBinding(
                                         "otherAdaptedMethod",
                                         3,
                                         aeron -> (DirectBuffer buffer, int offset, int length, Header header) -> {
@@ -381,7 +375,10 @@ class AeronQuickReceiverProcessorTest extends JavacTest {
         Assertions.assertEquals(
                 """
                         package org.jetc.aeron.quick.samples.general;
-                        import org.jetc.aeron.quick.messaging.ReceiverBindingProvider;
+                        import org.jetc.aeron.quick.messaging.ReceiverBindingToAeronBindingMapper;
+                        import org.jetc.aeron.quick.messaging.serialization.ObjectStringMapper;
+                        import org.jetc.aeron.quick.peers.receiver.ReceiverBinding;
+                        import org.jetc.aeron.quick.AeronQuickContext;
                         import org.jetc.aeron.quick.messaging.fragment_handling.ContextualHandler;
                         import org.jetc.aeron.quick.messaging.subscription.SubscriptionMeta;
                         import io.aeron.Publication;
@@ -399,36 +396,31 @@ class AeronQuickReceiverProcessorTest extends JavacTest {
                                                 
                         public class AeronQuickGeneralServiceServer_Adapter implements org.jetc.aeron.quick.peers.receiver.ReceiverAdapterBase<AeronQuickGeneralServiceServer>{
                             private static final Logger log = LoggerFactory.getLogger(AeronQuickGeneralServiceServer_Adapter.class);
-                            private static final String PROPS_SUFFIX = "aeron.quick.";
-                            private record Binding(String methodName, int fragmentLimit, ContextualHandler handler){}
-                            private final List<Binding> bindingsToCompute;
+                            private final List<ReceiverBinding> bindingsToCompute;
                             private String receiverName;
-                        
+                            private AeronQuickContext context;
+                            private ObjectStringMapper mapper;
+                
                             @Override
-                            public void init(String name) {
-                               receiverName = name;
-                            }
-                                                
-                            private static String getPropForMethod(String componentName, String method, String prop){
-                                    String value = System.getProperty(PROPS_SUFFIX + componentName + "." + method + "." + prop);
-                                    if(value == null || value.isBlank())
-                                        value = System.getProperty(PROPS_SUFFIX + componentName + "." + prop);
-                                    return value;
+                            public void setContext(AeronQuickContext context, String componentName) {
+                                receiverName = componentName;
+                                this.context = context;
+                                mapper = context.getObjectMapper();
                             }
                                                 
                             @Override
-                            public ReceiverBindingProvider getBindings() {
-                                ReceiverBindingProvider computedBindings = new ReceiverBindingProvider(new HashMap<>());
+                            public ReceiverBindingToAeronBindingMapper getBindings() {
+                                ReceiverBindingToAeronBindingMapper computedBindings = new ReceiverBindingToAeronBindingMapper(new HashMap<>());
                                                 
-                                for (Binding binding : this.bindingsToCompute){
+                                for (ReceiverBinding binding : this.bindingsToCompute){
                                     boolean isRepeatedBinding = computedBindings.setBinding(
-                                            getPropForMethod(receiverName, binding.methodName() ,"channel"),
-                                            Integer.parseInt(getPropForMethod(receiverName, binding.methodName(), "stream")),
+                                            context.getProperty(receiverName, binding.methodName() ,"channel"),
+                                            context.getIntProperty(receiverName, binding.methodName(), "stream"),
                                             new SubscriptionMeta(binding.handler(), binding.fragmentLimit())
                                     ) != null;
                                                 
                                     if(isRepeatedBinding)
-                                        throw new IllegalStateException("Only unique channel-stream pairs are allowed. Check properties for: %s".formatted(PROPS_SUFFIX + binding.methodName()));
+                                        throw new IllegalStateException("Only unique channel-stream pairs are allowed. Check properties for: %s.%s".formatted(receiverName, binding.methodName()));
                                 }
                                                 
                                 return computedBindings;
@@ -436,7 +428,7 @@ class AeronQuickReceiverProcessorTest extends JavacTest {
                             public AeronQuickGeneralServiceServer_Adapter(AeronQuickGeneralServiceServer server){
                                 MutableDirectBuffer rspBuffer = new ExpandableDirectByteBuffer(256);
                                 bindingsToCompute = List.of(
-                                    new Binding(
+                                    new ReceiverBinding(
                                         "methodWStringParam",
                                         3,
                                         aeron -> (DirectBuffer buffer, int offset, int length, Header header) -> {
@@ -483,7 +475,10 @@ class AeronQuickReceiverProcessorTest extends JavacTest {
         Assertions.assertEquals(
                 """
                         package org.jetc.aeron.quick.samples.general;
-                        import org.jetc.aeron.quick.messaging.ReceiverBindingProvider;
+                        import org.jetc.aeron.quick.messaging.ReceiverBindingToAeronBindingMapper;
+                        import org.jetc.aeron.quick.messaging.serialization.ObjectStringMapper;
+                        import org.jetc.aeron.quick.peers.receiver.ReceiverBinding;
+                        import org.jetc.aeron.quick.AeronQuickContext;
                         import org.jetc.aeron.quick.messaging.fragment_handling.ContextualHandler;
                         import org.jetc.aeron.quick.messaging.subscription.SubscriptionMeta;
                         import io.aeron.Publication;
@@ -501,36 +496,31 @@ class AeronQuickReceiverProcessorTest extends JavacTest {
                                                 
                         public class AeronQuickGeneralServiceServer_Adapter implements org.jetc.aeron.quick.peers.receiver.ReceiverAdapterBase<AeronQuickGeneralServiceServer>{
                             private static final Logger log = LoggerFactory.getLogger(AeronQuickGeneralServiceServer_Adapter.class);
-                            private static final String PROPS_SUFFIX = "aeron.quick.";
-                            private record Binding(String methodName, int fragmentLimit, ContextualHandler handler){}
-                            private final List<Binding> bindingsToCompute;
+                            private final List<ReceiverBinding> bindingsToCompute;
                             private String receiverName;
-                        
+                            private AeronQuickContext context;
+                            private ObjectStringMapper mapper;
+                
                             @Override
-                            public void init(String name) {
-                               receiverName = name;
-                            }
-                                                
-                            private static String getPropForMethod(String componentName, String method, String prop){
-                                    String value = System.getProperty(PROPS_SUFFIX + componentName + "." + method + "." + prop);
-                                    if(value == null || value.isBlank())
-                                        value = System.getProperty(PROPS_SUFFIX + componentName + "." + prop);
-                                    return value;
+                            public void setContext(AeronQuickContext context, String componentName) {
+                                receiverName = componentName;
+                                this.context = context;
+                                mapper = context.getObjectMapper();
                             }
                                                 
                             @Override
-                            public ReceiverBindingProvider getBindings() {
-                                ReceiverBindingProvider computedBindings = new ReceiverBindingProvider(new HashMap<>());
+                            public ReceiverBindingToAeronBindingMapper getBindings() {
+                                ReceiverBindingToAeronBindingMapper computedBindings = new ReceiverBindingToAeronBindingMapper(new HashMap<>());
                                                 
-                                for (Binding binding : this.bindingsToCompute){
+                                for (ReceiverBinding binding : this.bindingsToCompute){
                                     boolean isRepeatedBinding = computedBindings.setBinding(
-                                            getPropForMethod(receiverName, binding.methodName() ,"channel"),
-                                            Integer.parseInt(getPropForMethod(receiverName, binding.methodName(), "stream")),
+                                            context.getProperty(receiverName, binding.methodName() ,"channel"),
+                                            context.getIntProperty(receiverName, binding.methodName(), "stream"),
                                             new SubscriptionMeta(binding.handler(), binding.fragmentLimit())
                                     ) != null;
                                                 
                                     if(isRepeatedBinding)
-                                        throw new IllegalStateException("Only unique channel-stream pairs are allowed. Check properties for: %s".formatted(PROPS_SUFFIX + binding.methodName()));
+                                        throw new IllegalStateException("Only unique channel-stream pairs are allowed. Check properties for: %s.%s".formatted(receiverName, binding.methodName()));
                                 }
                                                 
                                 return computedBindings;
@@ -538,7 +528,7 @@ class AeronQuickReceiverProcessorTest extends JavacTest {
                             public AeronQuickGeneralServiceServer_Adapter(AeronQuickGeneralServiceServer server){
                                 MutableDirectBuffer rspBuffer = new ExpandableDirectByteBuffer(256);
                                 bindingsToCompute = List.of(
-                                    new Binding(
+                                    new ReceiverBinding(
                                         "notifyOperationDone",
                                         3,
                                         aeron -> (DirectBuffer buffer, int offset, int length, Header header) -> {
@@ -586,7 +576,10 @@ class AeronQuickReceiverProcessorTest extends JavacTest {
         Assertions.assertEquals(
                 """
                         package org.jetc.aeron.quick.samples.general;
-                        import org.jetc.aeron.quick.messaging.ReceiverBindingProvider;
+                        import org.jetc.aeron.quick.messaging.ReceiverBindingToAeronBindingMapper;
+                        import org.jetc.aeron.quick.messaging.serialization.ObjectStringMapper;
+                        import org.jetc.aeron.quick.peers.receiver.ReceiverBinding;
+                        import org.jetc.aeron.quick.AeronQuickContext;
                         import org.jetc.aeron.quick.messaging.fragment_handling.ContextualHandler;
                         import org.jetc.aeron.quick.messaging.subscription.SubscriptionMeta;
                         import io.aeron.Publication;
@@ -604,36 +597,31 @@ class AeronQuickReceiverProcessorTest extends JavacTest {
                                                 
                         public class AeronQuickGeneralServiceServer_Adapter implements org.jetc.aeron.quick.peers.receiver.ReceiverAdapterBase<AeronQuickGeneralServiceServer>{
                             private static final Logger log = LoggerFactory.getLogger(AeronQuickGeneralServiceServer_Adapter.class);
-                            private static final String PROPS_SUFFIX = "aeron.quick.";
-                            private record Binding(String methodName, int fragmentLimit, ContextualHandler handler){}
-                            private final List<Binding> bindingsToCompute;
+                            private final List<ReceiverBinding> bindingsToCompute;
                             private String receiverName;
-                        
+                            private AeronQuickContext context;
+                            private ObjectStringMapper mapper;
+                
                             @Override
-                            public void init(String name) {
-                               receiverName = name;
-                            }
-                                                
-                            private static String getPropForMethod(String componentName, String method, String prop){
-                                    String value = System.getProperty(PROPS_SUFFIX + componentName + "." + method + "." + prop);
-                                    if(value == null || value.isBlank())
-                                        value = System.getProperty(PROPS_SUFFIX + componentName + "." + prop);
-                                    return value;
+                            public void setContext(AeronQuickContext context, String componentName) {
+                                receiverName = componentName;
+                                this.context = context;
+                                mapper = context.getObjectMapper();
                             }
                                                 
                             @Override
-                            public ReceiverBindingProvider getBindings() {
-                                ReceiverBindingProvider computedBindings = new ReceiverBindingProvider(new HashMap<>());
+                            public ReceiverBindingToAeronBindingMapper getBindings() {
+                                ReceiverBindingToAeronBindingMapper computedBindings = new ReceiverBindingToAeronBindingMapper(new HashMap<>());
                                                 
-                                for (Binding binding : this.bindingsToCompute){
+                                for (ReceiverBinding binding : this.bindingsToCompute){
                                     boolean isRepeatedBinding = computedBindings.setBinding(
-                                            getPropForMethod(receiverName, binding.methodName() ,"channel"),
-                                            Integer.parseInt(getPropForMethod(receiverName, binding.methodName(), "stream")),
+                                            context.getProperty(receiverName, binding.methodName() ,"channel"),
+                                            context.getIntProperty(receiverName, binding.methodName(), "stream"),
                                             new SubscriptionMeta(binding.handler(), binding.fragmentLimit())
                                     ) != null;
                                                 
                                     if(isRepeatedBinding)
-                                        throw new IllegalStateException("Only unique channel-stream pairs are allowed. Check properties for: %s".formatted(PROPS_SUFFIX + binding.methodName()));
+                                        throw new IllegalStateException("Only unique channel-stream pairs are allowed. Check properties for: %s.%s".formatted(receiverName, binding.methodName()));
                                 }
                                                 
                                 return computedBindings;
@@ -641,27 +629,19 @@ class AeronQuickReceiverProcessorTest extends JavacTest {
                             public AeronQuickGeneralServiceServer_Adapter(AeronQuickGeneralServiceServer server){
                                 MutableDirectBuffer rspBuffer = new ExpandableDirectByteBuffer(256);
                                 bindingsToCompute = List.of(
-                                    new Binding(
+                                    new ReceiverBinding(
                                         "notifyOperationDone",
                                         3,
                                         aeron -> (DirectBuffer buffer, int offset, int length, Header header) -> {
                                             char param0 = buffer.getChar(offset, ByteOrder.LITTLE_ENDIAN);
                                             java.lang.String param1_str = buffer.getStringUtf8(offset + BitUtil.SIZE_OF_CHAR, ByteOrder.LITTLE_ENDIAN);
-                                            org.jetc.aeron.quick.samples.general.POJOExample param1 = mapToObject(param1_str, org.jetc.aeron.quick.samples.general.POJOExample.class);
+                                            org.jetc.aeron.quick.samples.general.POJOExample param1 = mapper.deserialize(param1_str, org.jetc.aeron.quick.samples.general.POJOExample.class);
                                             int param2 = buffer.getInt(offset + BitUtil.SIZE_OF_CHAR + param1_str.length() + BitUtil.SIZE_OF_INT, ByteOrder.LITTLE_ENDIAN);
                                             server.notifyOperationDone(param0, param1, param2);
                                         }
                                     )
                         
                                 );
-                            }
-                            private static final com.fasterxml.jackson.databind.ObjectMapper mapper = new com.fasterxml.jackson.databind.ObjectMapper();
-                            private static <T> T mapToObject(String content, Class<T> targetClass){
-                                try {
-                                    return mapper.readValue(content, targetClass);
-                                } catch (com.fasterxml.jackson.core.JsonProcessingException e) {
-                                    throw new RuntimeException(e);
-                                }
                             }
                         }""",
                 compilation.generatedFiles().getLast().getCharContent(false).toString()
@@ -701,7 +681,10 @@ class AeronQuickReceiverProcessorTest extends JavacTest {
         Assertions.assertEquals(
                 """
                         package org.jetc.aeron.quick.samples.general;
-                        import org.jetc.aeron.quick.messaging.ReceiverBindingProvider;
+                        import org.jetc.aeron.quick.messaging.ReceiverBindingToAeronBindingMapper;
+                        import org.jetc.aeron.quick.messaging.serialization.ObjectStringMapper;
+                        import org.jetc.aeron.quick.peers.receiver.ReceiverBinding;
+                        import org.jetc.aeron.quick.AeronQuickContext;
                         import org.jetc.aeron.quick.messaging.fragment_handling.ContextualHandler;
                         import org.jetc.aeron.quick.messaging.subscription.SubscriptionMeta;
                         import io.aeron.Publication;
@@ -719,36 +702,31 @@ class AeronQuickReceiverProcessorTest extends JavacTest {
                                                 
                         public class AeronQuickGeneralServiceServer_Adapter implements org.jetc.aeron.quick.peers.receiver.ReceiverAdapterBase<AeronQuickGeneralServiceServer>{
                             private static final Logger log = LoggerFactory.getLogger(AeronQuickGeneralServiceServer_Adapter.class);
-                            private static final String PROPS_SUFFIX = "aeron.quick.";
-                            private record Binding(String methodName, int fragmentLimit, ContextualHandler handler){}
-                            private final List<Binding> bindingsToCompute;
+                            private final List<ReceiverBinding> bindingsToCompute;
                             private String receiverName;
-                        
+                            private AeronQuickContext context;
+                            private ObjectStringMapper mapper;
+                
                             @Override
-                            public void init(String name) {
-                               receiverName = name;
-                            }
-                                                
-                            private static String getPropForMethod(String componentName, String method, String prop){
-                                    String value = System.getProperty(PROPS_SUFFIX + componentName + "." + method + "." + prop);
-                                    if(value == null || value.isBlank())
-                                        value = System.getProperty(PROPS_SUFFIX + componentName + "." + prop);
-                                    return value;
+                            public void setContext(AeronQuickContext context, String componentName) {
+                                receiverName = componentName;
+                                this.context = context;
+                                mapper = context.getObjectMapper();
                             }
                                                 
                             @Override
-                            public ReceiverBindingProvider getBindings() {
-                                ReceiverBindingProvider computedBindings = new ReceiverBindingProvider(new HashMap<>());
+                            public ReceiverBindingToAeronBindingMapper getBindings() {
+                                ReceiverBindingToAeronBindingMapper computedBindings = new ReceiverBindingToAeronBindingMapper(new HashMap<>());
                                                 
-                                for (Binding binding : this.bindingsToCompute){
+                                for (ReceiverBinding binding : this.bindingsToCompute){
                                     boolean isRepeatedBinding = computedBindings.setBinding(
-                                            getPropForMethod(receiverName, binding.methodName() ,"channel"),
-                                            Integer.parseInt(getPropForMethod(receiverName, binding.methodName(), "stream")),
+                                            context.getProperty(receiverName, binding.methodName() ,"channel"),
+                                            context.getIntProperty(receiverName, binding.methodName(), "stream"),
                                             new SubscriptionMeta(binding.handler(), binding.fragmentLimit())
                                     ) != null;
                                                 
                                     if(isRepeatedBinding)
-                                        throw new IllegalStateException("Only unique channel-stream pairs are allowed. Check properties for: %s".formatted(PROPS_SUFFIX + binding.methodName()));
+                                        throw new IllegalStateException("Only unique channel-stream pairs are allowed. Check properties for: %s.%s".formatted(receiverName, binding.methodName()));
                                 }
                                                 
                                 return computedBindings;
@@ -756,7 +734,7 @@ class AeronQuickReceiverProcessorTest extends JavacTest {
                             public AeronQuickGeneralServiceServer_Adapter(AeronQuickGeneralServiceServer server){
                                 MutableDirectBuffer rspBuffer = new ExpandableDirectByteBuffer(256);
                                 bindingsToCompute = List.of(
-                                    new Binding(
+                                    new ReceiverBinding(
                                         "contextualFragmentHandlerCompatible",
                                         3,
                                         server::contextualFragmentHandlerCompatible
@@ -800,7 +778,10 @@ class AeronQuickReceiverProcessorTest extends JavacTest {
         Assertions.assertEquals(
                 """
                         package org.jetc.aeron.quick.samples.general;
-                        import org.jetc.aeron.quick.messaging.ReceiverBindingProvider;
+                        import org.jetc.aeron.quick.messaging.ReceiverBindingToAeronBindingMapper;
+                        import org.jetc.aeron.quick.messaging.serialization.ObjectStringMapper;
+                        import org.jetc.aeron.quick.peers.receiver.ReceiverBinding;
+                        import org.jetc.aeron.quick.AeronQuickContext;
                         import org.jetc.aeron.quick.messaging.fragment_handling.ContextualHandler;
                         import org.jetc.aeron.quick.messaging.subscription.SubscriptionMeta;
                         import io.aeron.Publication;
@@ -818,36 +799,31 @@ class AeronQuickReceiverProcessorTest extends JavacTest {
                                                 
                         public class AeronQuickGeneralServiceServer_Adapter implements org.jetc.aeron.quick.peers.receiver.ReceiverAdapterBase<AeronQuickGeneralServiceServer>{
                             private static final Logger log = LoggerFactory.getLogger(AeronQuickGeneralServiceServer_Adapter.class);
-                            private static final String PROPS_SUFFIX = "aeron.quick.";
-                            private record Binding(String methodName, int fragmentLimit, ContextualHandler handler){}
-                            private final List<Binding> bindingsToCompute;
+                            private final List<ReceiverBinding> bindingsToCompute;
                             private String receiverName;
-                        
+                            private AeronQuickContext context;
+                            private ObjectStringMapper mapper;
+                
                             @Override
-                            public void init(String name) {
-                               receiverName = name;
-                            }
-                                                
-                            private static String getPropForMethod(String componentName, String method, String prop){
-                                    String value = System.getProperty(PROPS_SUFFIX + componentName + "." + method + "." + prop);
-                                    if(value == null || value.isBlank())
-                                        value = System.getProperty(PROPS_SUFFIX + componentName + "." + prop);
-                                    return value;
+                            public void setContext(AeronQuickContext context, String componentName) {
+                                receiverName = componentName;
+                                this.context = context;
+                                mapper = context.getObjectMapper();
                             }
                                                 
                             @Override
-                            public ReceiverBindingProvider getBindings() {
-                                ReceiverBindingProvider computedBindings = new ReceiverBindingProvider(new HashMap<>());
+                            public ReceiverBindingToAeronBindingMapper getBindings() {
+                                ReceiverBindingToAeronBindingMapper computedBindings = new ReceiverBindingToAeronBindingMapper(new HashMap<>());
                                                 
-                                for (Binding binding : this.bindingsToCompute){
+                                for (ReceiverBinding binding : this.bindingsToCompute){
                                     boolean isRepeatedBinding = computedBindings.setBinding(
-                                            getPropForMethod(receiverName, binding.methodName() ,"channel"),
-                                            Integer.parseInt(getPropForMethod(receiverName, binding.methodName(), "stream")),
+                                            context.getProperty(receiverName, binding.methodName() ,"channel"),
+                                            context.getIntProperty(receiverName, binding.methodName(), "stream"),
                                             new SubscriptionMeta(binding.handler(), binding.fragmentLimit())
                                     ) != null;
                                                 
                                     if(isRepeatedBinding)
-                                        throw new IllegalStateException("Only unique channel-stream pairs are allowed. Check properties for: %s".formatted(PROPS_SUFFIX + binding.methodName()));
+                                        throw new IllegalStateException("Only unique channel-stream pairs are allowed. Check properties for: %s.%s".formatted(receiverName, binding.methodName()));
                                 }
                                                 
                                 return computedBindings;
@@ -855,7 +831,7 @@ class AeronQuickReceiverProcessorTest extends JavacTest {
                             public AeronQuickGeneralServiceServer_Adapter(AeronQuickGeneralServiceServer server){
                                 MutableDirectBuffer rspBuffer = new ExpandableDirectByteBuffer(256);
                                 bindingsToCompute = List.of(
-                                    new Binding(
+                                    new ReceiverBinding(
                                         "fragmentHandlerCompatible",
                                         3,
                                         aeron -> server::fragmentHandlerCompatible

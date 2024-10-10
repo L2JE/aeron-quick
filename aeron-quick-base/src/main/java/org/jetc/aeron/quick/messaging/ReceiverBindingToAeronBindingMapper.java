@@ -6,10 +6,10 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
-public class ReceiverBindingProvider {
+public class ReceiverBindingToAeronBindingMapper {
     private final Map<String, Map<Integer, SubscriptionMeta>> methodBindings;
 
-    public ReceiverBindingProvider(Map<String, Map<Integer, SubscriptionMeta>> methodBindings) {
+    public ReceiverBindingToAeronBindingMapper(Map<String, Map<Integer, SubscriptionMeta>> methodBindings) {
         this.methodBindings = methodBindings;
     }
 
