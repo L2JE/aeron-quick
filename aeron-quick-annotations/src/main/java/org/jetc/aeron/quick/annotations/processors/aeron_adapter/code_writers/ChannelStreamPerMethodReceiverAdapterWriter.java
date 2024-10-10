@@ -15,7 +15,6 @@ public class ChannelStreamPerMethodReceiverAdapterWriter extends AdapterCodeWrit
     private static final int DEFAULT_FRAGMENT_LIMIT = 3;
     private static final String CONTEXTUAL_HANDLER_1ST_LINE = "aeron -> (DirectBuffer buffer, int offset, int length, Header header) -> {";
     private static final String DEFAULT_SERVER_PARAM_NAME = "server";
-    private static final String MAPPER_METHOD_NAME = "mapToObject";
     private boolean needsJSONMapper = false;
 
     private final PackageElement elementPackage;
@@ -30,7 +29,10 @@ public class ChannelStreamPerMethodReceiverAdapterWriter extends AdapterCodeWrit
         append("package ").append(String.valueOf(elementPackage.getQualifiedName())).append(";");
         newLine();
         append("""
-                import org.jetc.aeron.quick.messaging.ReceiverBindingProvider;
+                import org.jetc.aeron.quick.messaging.ReceiverBindingToAeronBindingMapper;
+                import org.jetc.aeron.quick.messaging.serialization.ObjectStringMapper;
+                import org.jetc.aeron.quick.peers.receiver.ReceiverBinding;
+                import org.jetc.aeron.quick.AeronQuickContext;
                 import org.jetc.aeron.quick.messaging.fragment_handling.ContextualHandler;
                 import org.jetc.aeron.quick.messaging.subscription.SubscriptionMeta;
                 import io.aeron.Publication;
@@ -51,38 +53,32 @@ public class ChannelStreamPerMethodReceiverAdapterWriter extends AdapterCodeWrit
         startBlock();
         append("    private static final Logger log = LoggerFactory.getLogger(").append(config.finalAdapterName()).append(".class);");
         newLine();
-        append("    private static final String PROPS_SUFFIX = \"aeron.quick.\";");
-        newLine();
         append("""
-                    private record Binding(String methodName, int fragmentLimit, ContextualHandler handler){}
-                    private final List<Binding> bindingsToCompute;
+                    private final List<ReceiverBinding> bindingsToCompute;
                     private String receiverName;
+                    private AeronQuickContext context;
+                    private ObjectStringMapper mapper;
                 
                     @Override
-                    public void init(String name) {
-                       receiverName = name;
-                    }
-                
-                    private static String getPropForMethod(String componentName, String method, String prop){
-                            String value = System.getProperty(PROPS_SUFFIX + componentName + "." + method + "." + prop);
-                            if(value == null || value.isBlank())
-                                value = System.getProperty(PROPS_SUFFIX + componentName + "." + prop);
-                            return value;
+                    public void setContext(AeronQuickContext context, String componentName) {
+                        receiverName = componentName;
+                        this.context = context;
+                        mapper = context.getObjectMapper();
                     }
                 
                     @Override
-                    public ReceiverBindingProvider getBindings() {
-                        ReceiverBindingProvider computedBindings = new ReceiverBindingProvider(new HashMap<>());
+                    public ReceiverBindingToAeronBindingMapper getBindings() {
+                        ReceiverBindingToAeronBindingMapper computedBindings = new ReceiverBindingToAeronBindingMapper(new HashMap<>());
             
-                        for (Binding binding : this.bindingsToCompute){
+                        for (ReceiverBinding binding : this.bindingsToCompute){
                             boolean isRepeatedBinding = computedBindings.setBinding(
-                                    getPropForMethod(receiverName, binding.methodName() ,"channel"),
-                                    Integer.parseInt(getPropForMethod(receiverName, binding.methodName(), "stream")),
+                                    context.getProperty(receiverName, binding.methodName() ,"channel"),
+                                    context.getIntProperty(receiverName, binding.methodName(), "stream"),
                                     new SubscriptionMeta(binding.handler(), binding.fragmentLimit())
                             ) != null;
             
                             if(isRepeatedBinding)
-                                throw new IllegalStateException("Only unique channel-stream pairs are allowed. Check properties for: %s".formatted(PROPS_SUFFIX + binding.methodName()));
+                                throw new IllegalStateException("Only unique channel-stream pairs are allowed. Check properties for: %s.%s".formatted(receiverName, binding.methodName()));
                         }
             
                         return computedBindings;
@@ -94,29 +90,7 @@ public class ChannelStreamPerMethodReceiverAdapterWriter extends AdapterCodeWrit
             throw new IOException(e);
         }
         newLine();
-        writeJSONMapper();
-
         append("}");
-    }
-
-    private void writeJSONMapper() throws IOException {
-        if(needsJSONMapper) {
-            iAppendLine("private static final com.fasterxml.jackson.databind.ObjectMapper mapper = new com.fasterxml.jackson.databind.ObjectMapper();");
-            iAppend("private static <T> T ").append(MAPPER_METHOD_NAME).append("(String content, Class<T> targetClass){");
-            startBlock();
-                iAppend("try {");
-                startBlock();
-                    iAppend("return mapper.readValue(content, targetClass);");
-                endBlock();
-                iAppend("} catch (com.fasterxml.jackson.core.JsonProcessingException e) {");
-                startBlock();
-                    iAppend("throw new RuntimeException(e);");
-                endBlock();
-                iAppend("}");
-            endBlock();
-            iAppend("}");
-            newLine();
-        }
     }
 
     private void writeConstructorMethod() throws Exception {
@@ -142,7 +116,7 @@ public class ChannelStreamPerMethodReceiverAdapterWriter extends AdapterCodeWrit
     }
 
     private void writeBindingForMethod(AdaptableMethod method) throws Exception {
-        iAppend("new Binding(");
+        iAppend("new ReceiverBinding(");
         startBlock();
         iAppend("\"").append(method.getPropName()).append("\",");
         newLine();
@@ -188,7 +162,7 @@ public class ChannelStreamPerMethodReceiverAdapterWriter extends AdapterCodeWrit
                 if(param.isNoStringObject()) {
                     needsJSONMapper = true;
                     newLine();
-                    iAppend(param.getDeclaredType() + " " + originalParamId + " = ").append(MAPPER_METHOD_NAME + "(").append(param.getParamId()).append(", ").append(param.getDeclaredType().toString()).append(".class);");
+                    iAppend(param.getDeclaredType() + " " + originalParamId + " = ").append("mapper.deserialize(").append(param.getParamId()).append(", ").append(param.getDeclaredType().toString()).append(".class);");
                 }
 
                 newLine();

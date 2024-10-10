@@ -10,7 +10,6 @@ import static org.jetc.aeron.quick.annotations.processors.aeron_adapter.code_wri
 
 public class ChannelStreamPerMethodSenderAdapterWriter extends AdapterCodeWriter {
     private static final String SENDER_ADAPTER_QUALIFIED_NAME = "org.jetc.aeron.quick.peers.sender.SenderAdapterBase";
-    private static final String MAPPER_METHOD_NAME = "serialize";
     private boolean needsJSONMapper = false;
 
     public ChannelStreamPerMethodSenderAdapterWriter(JavaFileObject sourceFile, AdapterConfiguration config) throws IOException {
@@ -23,6 +22,8 @@ public class ChannelStreamPerMethodSenderAdapterWriter extends AdapterCodeWriter
         newLine();
         append("""
             import com.fasterxml.jackson.core.JsonProcessingException;
+            import org.jetc.aeron.quick.messaging.serialization.ObjectStringMapper;
+            import org.jetc.aeron.quick.AeronQuickContext;
             import io.aeron.Aeron;
             import io.aeron.Publication;
             import org.agrona.BitUtil;
@@ -48,13 +49,8 @@ public class ChannelStreamPerMethodSenderAdapterWriter extends AdapterCodeWriter
             private final IdleStrategy idleStrategy = new SleepingMillisIdleStrategy(idleTime.toMillis());
             private final long maxRetries = connectionTimeout.toMillis() / idleTime.toMillis();
             private final int DEFAULT_INIT_BUFFER_SIZE = 256;
-        
-            private static String getPropForMethod(String client, String method, String prop){
-                String value = System.getProperty(PROPS_SUFFIX + client + "." + method + "." + prop);
-                if(value == null || value.isBlank())
-                    value = System.getProperty(PROPS_SUFFIX + prop);
-                return value;
-            }
+            private AeronQuickContext context;
+            private ObjectStringMapper mapper;
         
             private void offerMsg(Publication publication, MutableDirectBuffer buffer, int offset, int length) {
                 long streamPos = publication.offer(buffer, offset, length);
@@ -78,7 +74,6 @@ public class ChannelStreamPerMethodSenderAdapterWriter extends AdapterCodeWriter
         writeInitSenderMethod();
         writeContractMethodsImplementations();
         newLine();
-        writeJSONMapper();
         append("}");
     }
 
@@ -103,8 +98,10 @@ public class ChannelStreamPerMethodSenderAdapterWriter extends AdapterCodeWriter
 
     private void writeInitSenderMethod() throws IOException {
         iAppendLine("@Override");
-        iAppend("public void initSender(Aeron aeron, String clientName) {");
+        iAppend("public void setContext(AeronQuickContext context, String componentName) {");
         startBlock();
+            iAppendLine("this.context = context;");
+            iAppendLine("mapper = context.getObjectMapper();");
             iAppend("final String[] methods = new String[]{");
             long lastMethodIx = config.methodsToAdapt().size() - 1;
             for (var method : config.methodsToAdapt()){
@@ -117,9 +114,9 @@ public class ChannelStreamPerMethodSenderAdapterWriter extends AdapterCodeWriter
             newLine();
             append("""
                     for(int i = 0; i < publications.length; i++){
-                        publications[i] = aeron.addExclusivePublication(
-                            getPropForMethod(clientName, methods[i], "channel"),
-                            Integer.parseInt(getPropForMethod(clientName, methods[i], "stream"))
+                        publications[i] = context.getAeron().addExclusivePublication(
+                            context.getProperty(componentName, methods[i], "channel"),
+                            context.getIntProperty(componentName, methods[i], "stream")
                         );
                     }
             """);
@@ -156,7 +153,7 @@ public class ChannelStreamPerMethodSenderAdapterWriter extends AdapterCodeWriter
             if(!param.isPrimitive()) {
                 iAppend("int ").append(paramValue).append("Length = ");
                 if(param.isNoStringObject()) {
-                    paramValue = "serialize(" + paramValue + ")";
+                    paramValue = "mapper.serialize(" + paramValue + ")";
                     needsJSONMapper = true;
                 }
             } else
@@ -192,26 +189,6 @@ public class ChannelStreamPerMethodSenderAdapterWriter extends AdapterCodeWriter
             case DECLARED:
                 newLine();
                 iAppend("return null;");
-        }
-    }
-
-    private void writeJSONMapper() throws IOException {
-        if(needsJSONMapper) {
-            iAppendLine("private static final com.fasterxml.jackson.databind.ObjectMapper mapper = new com.fasterxml.jackson.databind.ObjectMapper();");
-            iAppend("private static String ").append(MAPPER_METHOD_NAME).append("(Object any){");
-            startBlock();
-            iAppend("try {");
-            startBlock();
-            iAppend("return mapper.writeValueAsString(any);");
-            endBlock();
-            iAppend("} catch (com.fasterxml.jackson.core.JsonProcessingException e) {");
-            startBlock();
-            iAppend("throw new RuntimeException(e);");
-            endBlock();
-            iAppend("}");
-            endBlock();
-            iAppend("}");
-            newLine();
         }
     }
 }

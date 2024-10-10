@@ -1,13 +1,11 @@
 package org.jetc.aeron.quick;
 
-import io.aeron.Aeron;
 import org.agrona.ErrorHandler;
 import org.agrona.concurrent.IdleStrategy;
 import org.agrona.concurrent.SleepingMillisIdleStrategy;
 import org.agrona.concurrent.status.AtomicCounter;
 
 public abstract class AeronQuickBuilder<R> {
-    protected Aeron aeron;
     protected IdleStrategy agentIdleStrategy;
     protected ErrorHandler agentErrorHandler;
     protected AtomicCounter agentErrorCounter;
