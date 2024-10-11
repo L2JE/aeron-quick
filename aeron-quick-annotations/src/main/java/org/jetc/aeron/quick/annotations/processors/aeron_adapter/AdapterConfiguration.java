@@ -6,7 +6,7 @@ import java.util.List;
 
 public class AdapterConfiguration {
     public static final String SENDER_SUFFIX = "_SAdapter";
-    public static final String RECEIVER_SUFFIX = "_Adapter";
+    public static final String RECEIVER_SUFFIX = "_RAdapter";
 
     private final TypeElement classToAdapt;
     private final String finalAdapterName;

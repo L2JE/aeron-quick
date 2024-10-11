@@ -1,15 +1,18 @@
-package org.jetc.aeron.quick.peers;
+package org.jetc.aeron.quick.peers.adapters;
 
 import org.jetc.aeron.quick.annotations.AeronQuickReceiver;
+import org.jetc.aeron.quick.peers.adapters.exception.AdaptingException;
+import org.jetc.aeron.quick.peers.receiver.ReceiverAdapter;
+import org.jetc.aeron.quick.peers.sender.SenderAdapter;
 import org.jetc.aeron.quick.peers.sender.SenderAdapterBase;
 import org.jetc.aeron.quick.peers.receiver.ReceiverAdapterBase;
-
 import java.lang.reflect.InvocationTargetException;
 import java.util.Optional;
 
 public class Adapters {
     private static final String ADAPTER_SUFFIX = "_Adapter";
     private static final String SENDER_ADAPTER_SUFFIX = "_SAdapter";
+    private static final String RECEIVER_ADAPTER_SUFFIX = "_RAdapter";
 
     /**
      * Loads and retrieves an adapter for a class marked with {@link AeronQuickReceiver @AeronQuickServer} which will bind the stream and channels to the corresponding method
@@ -54,5 +57,37 @@ public class Adapters {
         }
 
         return Optional.of(adapter);
+    }
+
+    @SuppressWarnings("unchecked")
+    public static <T> ReceiverAdapter<T> adaptReceiver1(T receiverInstance) throws AdaptingException {
+        Class<T> receiverClass = (Class<T>) receiverInstance.getClass();
+        if(receiverClass.getAnnotation(AeronQuickReceiver.class) == null)
+            throw new RuntimeException("The target receiver (%s) must be annotated with %s in order to have a compile time generated adapter".formatted(receiverClass.getCanonicalName(), AeronQuickReceiver.class.getCanonicalName()));
+
+        return (ReceiverAdapter<T>) instantiateAdapter(receiverClass, ReceiverAdapter.class ,RECEIVER_ADAPTER_SUFFIX);
+    }
+
+    @SuppressWarnings("unchecked")
+    public static <T> SenderAdapter<T> adaptSender1(Class<T> senderClass) throws AdaptingException {
+        return (SenderAdapter<T>) instantiateAdapter(senderClass, SenderAdapter.class, SENDER_ADAPTER_SUFFIX);
+    }
+
+    private static Object instantiateAdapter(Class<?> adapted, Class<?> adapterClass, String adapterID) throws AdaptingException {
+        Object retrieved;
+        String adapterName = adapted.getCanonicalName() + adapterID;
+        try {
+            retrieved = Class.forName(adapterName)
+                    .getDeclaredConstructor()
+                    .newInstance();
+        } catch (InstantiationException | IllegalAccessException | InvocationTargetException | NoSuchMethodException |
+                 ClassNotFoundException e) {
+            throw new AdaptingException("Could not load class (%s) or instantiate it using no-args constructor.".formatted(adapterName), e);
+        }
+
+        if(!adapterClass.isAssignableFrom(retrieved.getClass()))
+            throw new AdaptingException("This is really unexpected: tried to load an adapter for class (%s) and adapter found (%s) is not implementing the expected adapter interface (%s).".formatted(adapted.getCanonicalName(), adapterName, adapterClass));
+
+        return retrieved;
     }
 }

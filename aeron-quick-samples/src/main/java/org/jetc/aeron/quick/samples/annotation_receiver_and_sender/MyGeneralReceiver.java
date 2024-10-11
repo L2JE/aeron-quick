@@ -4,6 +4,7 @@ import org.agrona.concurrent.SleepingMillisIdleStrategy;
 import org.jetc.aeron.quick.AeronQuickFactory;
 import org.jetc.aeron.quick.annotations.AeronQuickReceiver;
 import org.jetc.aeron.quick.peers.receiver.AeronQuickReceiverRunner;
+import org.jetc.aeron.quick.peers.receiver.ReceiverAgentConfiguration;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import java.time.Duration;
@@ -42,16 +43,16 @@ public class MyGeneralReceiver implements AeronGeneralServiceContract {
         setMockSysProps(); //Set system properties for channels and streams (just for the example)
         log.warn("STARTING SERVER FROM ");
 
-        factory.getReceiverBuilder(new MyGeneralReceiver(), "annotatedReceiver").ifPresent(builder -> {
-            serverRunner = builder
-                    .setAgentIdleStrategy(new SleepingMillisIdleStrategy(1000 * 2))
-                    .build();
-            serverRunner.start();
-        });
+        serverRunner = factory.getReceiver(new MyGeneralReceiver(), "annotatedReceiver", MyGeneralReceiver::sleepTwoSecondsCfg);
+        serverRunner.start();
 
         Thread.sleep(Duration.ofMinutes(5));
         log.warn("STOPPING SERVER FROM");
         closeExample();
+    }
+
+    private static <T> void sleepTwoSecondsCfg(ReceiverAgentConfiguration<T> conf){
+       conf.setAgentIdleStrategy(new SleepingMillisIdleStrategy(1000 * 2));
     }
 
     public static final String GLOBAL_CHANNEL = "aeron:udp?endpoint=localhost:20121";

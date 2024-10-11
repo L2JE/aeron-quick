@@ -5,13 +5,24 @@ import io.aeron.CommonContext;
 import io.aeron.driver.MediaDriver;
 import io.aeron.exceptions.AeronException;
 import org.agrona.CloseHelper;
-import org.jetc.aeron.quick.peers.Adapters;
+import org.jetc.aeron.quick.annotations.AeronQuickContract;
+import org.jetc.aeron.quick.annotations.AeronQuickReceiver;
+import org.jetc.aeron.quick.annotations.QuickContractEndpoint;
+import org.jetc.aeron.quick.peers.PeerConfiguration;
+import org.jetc.aeron.quick.peers.adapters.Adapters;
+import org.jetc.aeron.quick.peers.adapters.exception.AdaptingException;
+import org.jetc.aeron.quick.peers.receiver.AeronQuickReceiverRunner;
+import org.jetc.aeron.quick.peers.receiver.ReceiverAdapter;
+import org.jetc.aeron.quick.peers.receiver.ReceiverAgentConfiguration;
 import org.jetc.aeron.quick.peers.sender.AeronQuickSenderBuilder;
 import org.jetc.aeron.quick.peers.receiver.AeronQuickReceiverBuilder;
 import org.jetc.aeron.quick.peers.receiver.ReceiverAdapterBase;
+import org.jetc.aeron.quick.peers.sender.SenderAdapter;
+import org.jetc.aeron.quick.peers.sender.SenderConfiguration;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import java.util.Optional;
+import java.util.function.Consumer;
 
 /**
  * This is the 'entrypoint' for the AeronQuick library.
@@ -49,9 +60,9 @@ public class AeronQuickFactory implements AutoCloseable{
 
     /**
      *
-     * @param targetServer any class marked with {@link org.jetc.aeron.quick.annotations.AeronQuickReceiver @AeronQuickReceiver} will receive messages through aeron on the methods marked with {@link org.jetc.aeron.quick.annotations.QuickContractEndpoint @QuickContractEndpoint}
+     * @param targetServer any class marked with {@link AeronQuickReceiver @AeronQuickReceiver} will receive messages through aeron on the methods marked with {@link QuickContractEndpoint @QuickContractEndpoint}
      * @return an {@link AeronQuickReceiverBuilder} wrapping the target server to allow any extra fine grain configuration
-     * @param <T> Any class marked with {@link org.jetc.aeron.quick.annotations.AeronQuickReceiver @AeronQuickReceiver}
+     * @param <T> Any class marked with {@link AeronQuickReceiver @AeronQuickReceiver}
      * @throws SetupNotReadyException if Aeron client is not connected
      */
     public <T> Optional<AeronQuickReceiverBuilder<T>> getReceiverBuilder(T targetServer, String receiverName) throws AeronException {
@@ -73,8 +84,8 @@ public class AeronQuickFactory implements AutoCloseable{
 
     /**
      * @param contract an Aeron Quick Contract, any class annotated with
-     * {@link org.jetc.aeron.quick.annotations.AeronQuickContract @AeronQuickContract} or at least has one method
-     * annotated with {@link org.jetc.aeron.quick.annotations.QuickContractEndpoint @QuickContractEndpoint}
+     * {@link AeronQuickContract @AeronQuickContract} or at least has one method
+     * annotated with {@link QuickContractEndpoint @QuickContractEndpoint}
      * <p>
      * @param senderName used to find configuration properties at
      * <p>
@@ -92,10 +103,46 @@ public class AeronQuickFactory implements AutoCloseable{
         );
     }
 
+    @SafeVarargs
+    public final <T> AeronQuickReceiverRunner<T> getReceiver(T targetInstance, String componentName, Consumer<ReceiverAgentConfiguration<T>>... configDigest) throws AdaptingException {
+        ReceiverAgentConfiguration<T> config = initCommonConfig(new ReceiverAgentConfiguration<>(), componentName);
+        config.setEndpoint(targetInstance);
+
+        for(var digest : configDigest) {
+            digest.accept(config);
+        }
+
+        ReceiverAdapter<T> adapter = Adapters.adaptReceiver1(targetInstance);
+        adapter.configure(config);
+
+        return new AeronQuickReceiverRunner<>(config);
+    }
+
+    @SafeVarargs
+    public final <T> T getSender(Class<T> targetContract, String componentName, Consumer<SenderConfiguration>... configDigest) throws AdaptingException {
+        SenderConfiguration config = initCommonConfig(new SenderConfiguration(), componentName);
+
+        for(var digest : configDigest) {
+            digest.accept(config);
+        }
+
+        SenderAdapter<T> adapter = Adapters.adaptSender1(targetContract);
+        adapter.configure(config);
+
+        return adapter.getAdapted();
+    }
+
+    private <T extends PeerConfiguration> T initCommonConfig(T config, String componentName){
+        config.setComponentName(componentName);
+        config.setContext(context);
+        return config;
+    }
+
+
     /**
      * @return A helper class for building an {@link AeronQuickFactory}
      */
-    public static AeronQuickFactory.Builder builder(){
+    public static Builder builder(){
         return new Builder();
     }
 

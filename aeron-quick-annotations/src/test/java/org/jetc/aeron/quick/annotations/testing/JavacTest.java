@@ -1,13 +1,16 @@
 package org.jetc.aeron.quick.annotations.testing;
 
+import com.google.testing.compile.Compilation;
 import com.google.testing.compile.Compiler;
 import com.google.testing.compile.JavaFileObjects;
 import javax.tools.JavaFileObject;
 import java.io.File;
+import java.io.IOException;
 import java.nio.file.Paths;
 import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 public abstract class JavacTest {
     private static final String TEST_RESOURCES = "src/test/resources";
@@ -29,5 +32,17 @@ public abstract class JavacTest {
             Collections.addAll(finalCP, filesToInclude);
 
         return compiler.withClasspath(finalCP);
+    }
+
+    public static void assertFileContentEquals(Compilation compilation, String actualFileNameEnd, String expectedContent){
+        compilation.generatedFiles().forEach(file -> {
+            if(file.getName().endsWith(actualFileNameEnd)) {
+                try {
+                    assertEquals(expectedContent, file.getCharContent(false).toString());
+                } catch (IOException e) {
+                    throw new RuntimeException(e);
+                }
+            }
+        });
     }
 }
