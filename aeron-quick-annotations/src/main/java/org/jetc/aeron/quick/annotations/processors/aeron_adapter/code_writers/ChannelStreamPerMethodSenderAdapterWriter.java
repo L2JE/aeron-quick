@@ -9,7 +9,7 @@ import java.io.IOException;
 import static org.jetc.aeron.quick.annotations.processors.aeron_adapter.code_writers.AeronDirectBufferOperationsWriter.appendPutValueOnBufferStr;
 
 public class ChannelStreamPerMethodSenderAdapterWriter extends AdapterCodeWriter {
-    private static final String SENDER_ADAPTER_QUALIFIED_NAME = "org.jetc.aeron.quick.peers.sender.SenderAdapterBase";
+    private static final String SENDER_ADAPTER_QUALIFIED_NAME = "org.jetc.aeron.quick.peers.sender.SenderAdapter";
     private boolean needsJSONMapper = false;
 
     public ChannelStreamPerMethodSenderAdapterWriter(JavaFileObject sourceFile, AdapterConfiguration config) throws IOException {
@@ -36,6 +36,7 @@ public class ChannelStreamPerMethodSenderAdapterWriter extends AdapterCodeWriter
             import org.jetc.aeron.quick.exception.PublicationOfferFailedException;
             import java.nio.ByteOrder;
             import java.time.Duration;
+            import org.jetc.aeron.quick.peers.sender.SenderConfiguration;
             """
         );
         newLine();
@@ -62,19 +63,21 @@ public class ChannelStreamPerMethodSenderAdapterWriter extends AdapterCodeWriter
                 if(i >= maxRetries)
                     throw new PublicationOfferFailedException();
             }
-        
-            @Override
-            public AeronGeneralServiceContract getClient() {
-                return this;
-            }
         """);
         iAppend("private final Publication[] publications = new Publication[").append(String.valueOf(config.methodsToAdapt().size())).append("];");
         newLine();
         writeBuffersAttribute();
-        writeInitSenderMethod();
+        writeConfigureMethod();
+        writeGetAdaptedMethod();
         writeContractMethodsImplementations();
         newLine();
         append("}");
+    }
+
+    private void writeGetAdaptedMethod() throws IOException {
+        iAppendLine("@Override");
+        iAppend("public ").append(config.classToAdaptName()).append(" getAdapted() { return this; }");
+        newLine();
     }
 
     private void writeBuffersAttribute() throws IOException {
@@ -96,12 +99,13 @@ public class ChannelStreamPerMethodSenderAdapterWriter extends AdapterCodeWriter
         iAppendLine("};");
     }
 
-    private void writeInitSenderMethod() throws IOException {
+    private void writeConfigureMethod() throws IOException {
         iAppendLine("@Override");
-        iAppend("public void setContext(AeronQuickContext context, String componentName) {");
+        iAppend("public void configure(SenderConfiguration config) {");
         startBlock();
-            iAppendLine("this.context = context;");
-            iAppendLine("mapper = context.getObjectMapper();");
+            iAppendLine("final AeronQuickContext ctx = config.getContext();");
+            iAppendLine("mapper = ctx.getObjectMapper();");
+            iAppendLine("String senderName = config.getComponentName();");
             iAppend("final String[] methods = new String[]{");
             long lastMethodIx = config.methodsToAdapt().size() - 1;
             for (var method : config.methodsToAdapt()){
@@ -114,9 +118,9 @@ public class ChannelStreamPerMethodSenderAdapterWriter extends AdapterCodeWriter
             newLine();
             append("""
                     for(int i = 0; i < publications.length; i++){
-                        publications[i] = context.getAeron().addExclusivePublication(
-                            context.getProperty(componentName, methods[i], "channel"),
-                            context.getIntProperty(componentName, methods[i], "stream")
+                        publications[i] = ctx.getAeron().addExclusivePublication(
+                            ctx.getProperty(senderName, methods[i], "channel"),
+                            ctx.getIntProperty(senderName, methods[i], "stream")
                         );
                     }
             """);

@@ -22,7 +22,7 @@ public class MyGeneralSender {
     private static void aeronQuickSenderExample() {
         SigInt.register(() -> running.set(false));
         IdleStrategy idleStrategy = new SleepingMillisIdleStrategy(1000);
-        sender = factory.getSenderBuilder(AeronGeneralServiceContract.class, "senderExample").orElseThrow().build();
+        sender = factory.getSender(AeronGeneralServiceContract.class, "senderExample");
 
         for(long it = 0; running.get(); it++) {
             try {
