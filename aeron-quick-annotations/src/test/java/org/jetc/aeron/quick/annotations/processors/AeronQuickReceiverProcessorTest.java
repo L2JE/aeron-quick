@@ -5,7 +5,6 @@ import com.google.testing.compile.CompilationSubject;
 import com.google.testing.compile.Compiler;
 import com.google.testing.compile.JavaFileObjects;
 import org.jetc.aeron.quick.annotations.testing.JavacTest;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import javax.tools.JavaFileObject;
 import javax.tools.StandardLocation;
