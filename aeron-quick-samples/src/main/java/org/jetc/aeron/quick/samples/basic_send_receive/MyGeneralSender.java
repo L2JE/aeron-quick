@@ -1,4 +1,4 @@
-package org.jetc.aeron.quick.samples.annotation_receiver_and_sender;
+package org.jetc.aeron.quick.samples.basic_send_receive;
 
 import org.agrona.concurrent.IdleStrategy;
 import org.agrona.concurrent.SigInt;
