@@ -30,18 +30,12 @@ public class HandlerPerBindingAgent implements Agent {
 
     @Override
     public int doWork() throws Exception {
-        log.warn("Iterating subscriptions and polling.");
         for(SubscriptionData subscriptionData : this.subscriptions){
             SubscriptionMeta meta = subscriptionData.meta();
-            log.warn("Polling from %s - stream(%s) - limit(%s)".formatted(subscriptionData.subscription().channel(), subscriptionData.subscription().streamId(), meta.fragmentLimit()));
-            int fragmentsReceived = subscriptionData.subscription().poll(
+            subscriptionData.subscription().poll(
                     subscriptionData.handler(),
                     meta.fragmentLimit()
             );
-
-            if(fragmentsReceived != 0){
-                log.warn("Received fragments: %s ".formatted(fragmentsReceived));
-            }
         }
         return 0;
     }
