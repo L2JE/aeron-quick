@@ -6,6 +6,7 @@ import org.agrona.concurrent.SleepingMillisIdleStrategy;
 import org.jetc.aeron.quick.AeronQuickFactory;
 import org.jetc.aeron.quick.annotations.AeronQuickSender;
 import org.jetc.aeron.quick.exception.PublicationOfferFailedException;
+import org.jetc.aeron.quick.messaging.publication.OfferingResultSideActions;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import java.time.Duration;
@@ -22,7 +23,7 @@ public class MyGeneralSender {
     private static void aeronQuickSenderExample() {
         SigInt.register(() -> running.set(false));
         IdleStrategy idleStrategy = new SleepingMillisIdleStrategy(1000);
-        sender = factory.getSender(AeronGeneralServiceContract.class, "senderExample");
+        sender = factory.getSender(AeronGeneralServiceContract.class, "senderExample", c -> c.setOfferingSideAction(OfferingResultSideActions.throwOnFailed()));
 
         for(long it = 0; running.get(); it++) {
             try {
