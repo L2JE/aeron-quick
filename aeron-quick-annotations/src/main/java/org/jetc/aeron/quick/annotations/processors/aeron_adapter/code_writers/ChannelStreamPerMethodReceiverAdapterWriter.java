@@ -32,7 +32,7 @@ public class ChannelStreamPerMethodReceiverAdapterWriter extends AdapterCodeWrit
                 import org.jetc.aeron.quick.AeronQuickContext;
                 import org.jetc.aeron.quick.messaging.serialization.ObjectStringMapper;
                 import org.jetc.aeron.quick.messaging.subscription.SubscriptionMeta;
-                import org.jetc.aeron.quick.peers.receiver.ReceiverBinding2;
+                import org.jetc.aeron.quick.peers.receiver.ReceiverBinding;
                 import org.jetc.aeron.quick.peers.receiver.ReceiverConfiguration;
                 import org.slf4j.Logger;
                 import org.slf4j.LoggerFactory;
@@ -59,7 +59,7 @@ public class ChannelStreamPerMethodReceiverAdapterWriter extends AdapterCodeWrit
         iAppendLine("final String receiverName = config.getComponentName();");
         iAppend("final ").append(config.classToAdaptName()).append(" server = config.getEndpoint();");
         newLine();
-        iAppend("List<ReceiverBinding2> bindings = List.of(");
+        iAppend("List<ReceiverBinding> bindings = List.of(");
         startBlock();
         
         List<AdaptableMethod> methodsToAdapt = config.methodsToAdapt();
@@ -93,7 +93,7 @@ public class ChannelStreamPerMethodReceiverAdapterWriter extends AdapterCodeWrit
     }
 
     private void writeBindingForMethod(AdaptableMethod method) throws IOException {
-        iAppend("new ReceiverBinding2(");
+        iAppend("new ReceiverBinding(");
         startBlock();
         iAppend("\"").append(method.getPropName()).append("\",");
         newLine();

@@ -59,7 +59,7 @@ class AeronQuickReceiverProcessorTest extends JavacTest {
                 import org.jetc.aeron.quick.AeronQuickContext;
                 import org.jetc.aeron.quick.messaging.serialization.ObjectStringMapper;
                 import org.jetc.aeron.quick.messaging.subscription.SubscriptionMeta;
-                import org.jetc.aeron.quick.peers.receiver.ReceiverBinding2;
+                import org.jetc.aeron.quick.peers.receiver.ReceiverBinding;
                 import org.jetc.aeron.quick.peers.receiver.ReceiverConfiguration;
                 import org.slf4j.Logger;
                 import org.slf4j.LoggerFactory;
@@ -75,8 +75,8 @@ class AeronQuickReceiverProcessorTest extends JavacTest {
                         final ObjectStringMapper mapper = ctx.getObjectMapper();
                         final String receiverName = config.getComponentName();
                         final AeronQuickGeneralServiceServer server = config.getEndpoint();
-                        List<ReceiverBinding2> bindings = List.of(
-                            new ReceiverBinding2(
+                        List<ReceiverBinding> bindings = List.of(
+                            new ReceiverBinding(
                                 "notifyOperationDone",
                                 aeron -> (buffer, offset, length, header) -> {
                                     char param0 = buffer.getChar(offset, ByteOrder.LITTLE_ENDIAN);
@@ -134,7 +134,7 @@ class AeronQuickReceiverProcessorTest extends JavacTest {
                 import org.jetc.aeron.quick.AeronQuickContext;
                 import org.jetc.aeron.quick.messaging.serialization.ObjectStringMapper;
                 import org.jetc.aeron.quick.messaging.subscription.SubscriptionMeta;
-                import org.jetc.aeron.quick.peers.receiver.ReceiverBinding2;
+                import org.jetc.aeron.quick.peers.receiver.ReceiverBinding;
                 import org.jetc.aeron.quick.peers.receiver.ReceiverConfiguration;
                 import org.slf4j.Logger;
                 import org.slf4j.LoggerFactory;
@@ -150,8 +150,8 @@ class AeronQuickReceiverProcessorTest extends JavacTest {
                         final ObjectStringMapper mapper = ctx.getObjectMapper();
                         final String receiverName = config.getComponentName();
                         final AeronQuickGeneralServiceServer server = config.getEndpoint();
-                        List<ReceiverBinding2> bindings = List.of(
-                            new ReceiverBinding2(
+                        List<ReceiverBinding> bindings = List.of(
+                            new ReceiverBinding(
                                 "notifyOperationDone",
                                 aeron -> (buffer, offset, length, header) -> {
                                     char param0 = buffer.getChar(offset, ByteOrder.LITTLE_ENDIAN);
@@ -159,7 +159,7 @@ class AeronQuickReceiverProcessorTest extends JavacTest {
                                     server.notifyOperationDone(param0, param1);
                                 }
                             ),
-                            new ReceiverBinding2(
+                            new ReceiverBinding(
                                 "otherAdaptedMethod",
                                 aeron -> (buffer, offset, length, header) -> {
                                     server.otherAdaptedMethod();
@@ -210,7 +210,7 @@ class AeronQuickReceiverProcessorTest extends JavacTest {
         import org.jetc.aeron.quick.AeronQuickContext;
         import org.jetc.aeron.quick.messaging.serialization.ObjectStringMapper;
         import org.jetc.aeron.quick.messaging.subscription.SubscriptionMeta;
-        import org.jetc.aeron.quick.peers.receiver.ReceiverBinding2;
+        import org.jetc.aeron.quick.peers.receiver.ReceiverBinding;
         import org.jetc.aeron.quick.peers.receiver.ReceiverConfiguration;
         import org.slf4j.Logger;
         import org.slf4j.LoggerFactory;
@@ -226,8 +226,8 @@ class AeronQuickReceiverProcessorTest extends JavacTest {
                 final ObjectStringMapper mapper = ctx.getObjectMapper();
                 final String receiverName = config.getComponentName();
                 final AeronQuickGeneralServiceServer server = config.getEndpoint();
-                List<ReceiverBinding2> bindings = List.of(
-                    new ReceiverBinding2(
+                List<ReceiverBinding> bindings = List.of(
+                    new ReceiverBinding(
                         "notifyOperationDone",
                         aeron -> (buffer, offset, length, header) -> {
                             char param0 = buffer.getChar(offset, ByteOrder.LITTLE_ENDIAN);
@@ -235,7 +235,7 @@ class AeronQuickReceiverProcessorTest extends JavacTest {
                             server.notifyOperationDone(param0, param1);
                         }
                     ),
-                    new ReceiverBinding2(
+                    new ReceiverBinding(
                         "otherAdaptedMethod",
                         aeron -> (buffer, offset, length, header) -> {
                             server.otherAdaptedMethod();
@@ -285,7 +285,7 @@ class AeronQuickReceiverProcessorTest extends JavacTest {
                 import org.jetc.aeron.quick.AeronQuickContext;
                 import org.jetc.aeron.quick.messaging.serialization.ObjectStringMapper;
                 import org.jetc.aeron.quick.messaging.subscription.SubscriptionMeta;
-                import org.jetc.aeron.quick.peers.receiver.ReceiverBinding2;
+                import org.jetc.aeron.quick.peers.receiver.ReceiverBinding;
                 import org.jetc.aeron.quick.peers.receiver.ReceiverConfiguration;
                 import org.slf4j.Logger;
                 import org.slf4j.LoggerFactory;
@@ -301,8 +301,8 @@ class AeronQuickReceiverProcessorTest extends JavacTest {
                         final ObjectStringMapper mapper = ctx.getObjectMapper();
                         final String receiverName = config.getComponentName();
                         final AeronQuickGeneralServiceServer server = config.getEndpoint();
-                        List<ReceiverBinding2> bindings = List.of(
-                            new ReceiverBinding2(
+                        List<ReceiverBinding> bindings = List.of(
+                            new ReceiverBinding(
                                 "methodWStringParam",
                                 aeron -> (buffer, offset, length, header) -> {
                                     java.lang.String param0 = buffer.getStringUtf8(offset, ByteOrder.LITTLE_ENDIAN);
@@ -354,7 +354,7 @@ class AeronQuickReceiverProcessorTest extends JavacTest {
                 import org.jetc.aeron.quick.AeronQuickContext;
                 import org.jetc.aeron.quick.messaging.serialization.ObjectStringMapper;
                 import org.jetc.aeron.quick.messaging.subscription.SubscriptionMeta;
-                import org.jetc.aeron.quick.peers.receiver.ReceiverBinding2;
+                import org.jetc.aeron.quick.peers.receiver.ReceiverBinding;
                 import org.jetc.aeron.quick.peers.receiver.ReceiverConfiguration;
                 import org.slf4j.Logger;
                 import org.slf4j.LoggerFactory;
@@ -370,8 +370,8 @@ class AeronQuickReceiverProcessorTest extends JavacTest {
                         final ObjectStringMapper mapper = ctx.getObjectMapper();
                         final String receiverName = config.getComponentName();
                         final AeronQuickGeneralServiceServer server = config.getEndpoint();
-                        List<ReceiverBinding2> bindings = List.of(
-                            new ReceiverBinding2(
+                        List<ReceiverBinding> bindings = List.of(
+                            new ReceiverBinding(
                                 "notifyOperationDone",
                                 aeron -> (buffer, offset, length, header) -> {
                                     char param0 = buffer.getChar(offset, ByteOrder.LITTLE_ENDIAN);
@@ -424,7 +424,7 @@ class AeronQuickReceiverProcessorTest extends JavacTest {
                 import org.jetc.aeron.quick.AeronQuickContext;
                 import org.jetc.aeron.quick.messaging.serialization.ObjectStringMapper;
                 import org.jetc.aeron.quick.messaging.subscription.SubscriptionMeta;
-                import org.jetc.aeron.quick.peers.receiver.ReceiverBinding2;
+                import org.jetc.aeron.quick.peers.receiver.ReceiverBinding;
                 import org.jetc.aeron.quick.peers.receiver.ReceiverConfiguration;
                 import org.slf4j.Logger;
                 import org.slf4j.LoggerFactory;
@@ -440,8 +440,8 @@ class AeronQuickReceiverProcessorTest extends JavacTest {
                         final ObjectStringMapper mapper = ctx.getObjectMapper();
                         final String receiverName = config.getComponentName();
                         final AeronQuickGeneralServiceServer server = config.getEndpoint();
-                        List<ReceiverBinding2> bindings = List.of(
-                            new ReceiverBinding2(
+                        List<ReceiverBinding> bindings = List.of(
+                            new ReceiverBinding(
                                 "notifyOperationDone",
                                 aeron -> (buffer, offset, length, header) -> {
                                     char param0 = buffer.getChar(offset, ByteOrder.LITTLE_ENDIAN);
@@ -498,7 +498,7 @@ class AeronQuickReceiverProcessorTest extends JavacTest {
                 import org.jetc.aeron.quick.AeronQuickContext;
                 import org.jetc.aeron.quick.messaging.serialization.ObjectStringMapper;
                 import org.jetc.aeron.quick.messaging.subscription.SubscriptionMeta;
-                import org.jetc.aeron.quick.peers.receiver.ReceiverBinding2;
+                import org.jetc.aeron.quick.peers.receiver.ReceiverBinding;
                 import org.jetc.aeron.quick.peers.receiver.ReceiverConfiguration;
                 import org.slf4j.Logger;
                 import org.slf4j.LoggerFactory;
@@ -514,8 +514,8 @@ class AeronQuickReceiverProcessorTest extends JavacTest {
                         final ObjectStringMapper mapper = ctx.getObjectMapper();
                         final String receiverName = config.getComponentName();
                         final AeronQuickGeneralServiceServer server = config.getEndpoint();
-                        List<ReceiverBinding2> bindings = List.of(
-                            new ReceiverBinding2(
+                        List<ReceiverBinding> bindings = List.of(
+                            new ReceiverBinding(
                                 "contextualFragmentHandlerCompatible",
                                 server::contextualFragmentHandlerCompatible
                             )
@@ -564,7 +564,7 @@ class AeronQuickReceiverProcessorTest extends JavacTest {
                 import org.jetc.aeron.quick.AeronQuickContext;
                 import org.jetc.aeron.quick.messaging.serialization.ObjectStringMapper;
                 import org.jetc.aeron.quick.messaging.subscription.SubscriptionMeta;
-                import org.jetc.aeron.quick.peers.receiver.ReceiverBinding2;
+                import org.jetc.aeron.quick.peers.receiver.ReceiverBinding;
                 import org.jetc.aeron.quick.peers.receiver.ReceiverConfiguration;
                 import org.slf4j.Logger;
                 import org.slf4j.LoggerFactory;
@@ -580,8 +580,8 @@ class AeronQuickReceiverProcessorTest extends JavacTest {
                         final ObjectStringMapper mapper = ctx.getObjectMapper();
                         final String receiverName = config.getComponentName();
                         final AeronQuickGeneralServiceServer server = config.getEndpoint();
-                        List<ReceiverBinding2> bindings = List.of(
-                            new ReceiverBinding2(
+                        List<ReceiverBinding> bindings = List.of(
+                            new ReceiverBinding(
                                 "fragmentHandlerCompatible",
                                 aeron -> server::fragmentHandlerCompatible
                             )

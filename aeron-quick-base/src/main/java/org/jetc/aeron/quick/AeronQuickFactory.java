@@ -14,14 +14,10 @@ import org.jetc.aeron.quick.peers.adapters.exception.AdaptingException;
 import org.jetc.aeron.quick.peers.receiver.AeronQuickReceiverRunner;
 import org.jetc.aeron.quick.peers.receiver.ReceiverAdapter;
 import org.jetc.aeron.quick.peers.receiver.ReceiverAgentConfiguration;
-import org.jetc.aeron.quick.peers.sender.AeronQuickSenderBuilder;
-import org.jetc.aeron.quick.peers.receiver.AeronQuickReceiverBuilder;
-import org.jetc.aeron.quick.peers.receiver.ReceiverAdapterBase;
 import org.jetc.aeron.quick.peers.sender.SenderAdapter;
 import org.jetc.aeron.quick.peers.sender.SenderConfiguration;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import java.util.Optional;
 import java.util.function.Consumer;
 
 /**
@@ -57,52 +53,21 @@ public class AeronQuickFactory implements AutoCloseable{
         if(this.context.getAeron() == null || this.context.getAeron().isClosed())
             this.context.setAeron(Aeron.connect(aeronContext));
     }
-
     /**
-     *
-     * @param targetServer any class marked with {@link AeronQuickReceiver @AeronQuickReceiver} will receive messages through aeron on the methods marked with {@link QuickContractEndpoint @QuickContractEndpoint}
-     * @return an {@link AeronQuickReceiverBuilder} wrapping the target server to allow any extra fine grain configuration
-     * @param <T> Any class marked with {@link AeronQuickReceiver @AeronQuickReceiver}
-     * @throws SetupNotReadyException if Aeron client is not connected
+     * Loads and configures Receiver Adapter generated at compile time.
+     * @param targetInstance any class marked with {@link AeronQuickReceiver @AeronQuickReceiver} will receive messages through Aeron on the methods directly/indirectly marked with {@link QuickContractEndpoint @QuickContractEndpoint}
+     * <p>
+     * @param componentName used to find configuration properties at
+     * <p>
+     * {@code aeron.quick.<receiverName>} eg:
+     * <p>
+     * {@code aeron.quick.sampleReceiver.methodName.channel = aeron:udp?endpoint=localhost:20121}
+     * <p>
+     * @param configDigest consumer for configuration object with default values to customize receiver behavior
+     * <p>
+     * @return an autocloseable wrapper for the receiver to allow to stop or start the agent that polls messages from Aeron logs
+     * @throws AdaptingException if any error occurs while loading receiver adapter
      */
-    public <T> Optional<AeronQuickReceiverBuilder<T>> getReceiverBuilder(T targetServer, String receiverName) throws AeronException {
-        return this.getReceiverBuilder(
-            Adapters.adaptReceiver(targetServer).orElseThrow(() -> new IllegalStateException("No Adapter class could be loaded for: " + targetServer.getClass().getCanonicalName())),
-            receiverName
-        );
-    }
-
-    public <T> Optional<AeronQuickReceiverBuilder<T>> getReceiverBuilder(ReceiverAdapterBase<T> serverEntrypoint, String receiverName){
-        try {
-            assertFactoryIsReady();
-            return Optional.of(new AeronQuickReceiverBuilder<>(serverEntrypoint, context).setReceiverName(receiverName));
-        } catch (Exception error) {
-            log.error("Could not create a receiver builder: ", error);
-        }
-        return Optional.empty();
-    }
-
-    /**
-     * @param contract an Aeron Quick Contract, any class annotated with
-     * {@link AeronQuickContract @AeronQuickContract} or at least has one method
-     * annotated with {@link QuickContractEndpoint @QuickContractEndpoint}
-     * <p>
-     * @param senderName used to find configuration properties at
-     * <p>
-     * {@code aeron.quick.<senderName>} eg:
-     * <p>
-     * {@code aeron.quick.sampleSender.methodName.channel = aeron:udp?endpoint=localhost:20121}
-     * @return a client implementing the given contract, so calling a method in the client results in sending a message through Aeron
-     */
-    public <T> Optional<AeronQuickSenderBuilder<T>> getSenderBuilder(Class<T> contract, String senderName){
-        return Optional.of(
-            new AeronQuickSenderBuilder<>(
-                Adapters.adaptSender(contract).orElseThrow(() -> new IllegalStateException("No Adapter class could be loaded for: " + contract.getCanonicalName())),
-                context
-            ).setSenderName(senderName)
-        );
-    }
-
     @SafeVarargs
     public final <T> AeronQuickReceiverRunner<T> getReceiver(T targetInstance, String componentName, Consumer<ReceiverAgentConfiguration<T>>... configDigest) throws AdaptingException {
         ReceiverAgentConfiguration<T> config = initCommonConfig(new ReceiverAgentConfiguration<>(), componentName);
@@ -112,12 +77,27 @@ public class AeronQuickFactory implements AutoCloseable{
             digest.accept(config);
         }
 
-        ReceiverAdapter<T> adapter = Adapters.adaptReceiver1(targetInstance);
+        ReceiverAdapter<T> adapter = Adapters.adaptReceiver(targetInstance);
         adapter.configure(config);
 
         return new AeronQuickReceiverRunner<>(config);
     }
 
+    /**
+     * Loads and configures Sender Adapter generated at compile time.
+     * @param targetContract an Aeron Quick Contract, any class annotated with {@link AeronQuickContract @AeronQuickContract} or at least has one method annotated with {@link QuickContractEndpoint @QuickContractEndpoint}
+     * <p>
+     * @param componentName used to find configuration properties at
+     * <p>
+     * {@code aeron.quick.<senderName>} eg:
+     * <p>
+     * {@code aeron.quick.sampleSender.methodName.channel = aeron:udp?endpoint=localhost:20121}
+     * <p>
+     * @param configDigest consumer for configuration object with default values to customize sender behavior
+     * <p>
+     * @return a sender implementing the given contract, so that calling a method in the client results in sending a message through Aeron
+     * @throws AdaptingException if any error occurs while loading receiver adapter
+     */
     @SafeVarargs
     public final <T> T getSender(Class<T> targetContract, String componentName, Consumer<SenderConfiguration>... configDigest) throws AdaptingException {
         SenderConfiguration config = initCommonConfig(new SenderConfiguration(), componentName);
@@ -126,13 +106,16 @@ public class AeronQuickFactory implements AutoCloseable{
             digest.accept(config);
         }
 
-        SenderAdapter<T> adapter = Adapters.adaptSender1(targetContract);
+        SenderAdapter<T> adapter = Adapters.adaptSender(targetContract);
         adapter.configure(config);
 
         return adapter.getAdapted();
     }
 
     private <T extends PeerConfiguration> T initCommonConfig(T config, String componentName){
+        if(this.context.getAeron() == null || this.context.getAeron().isClosed())
+            throw new SetupNotReadyException("Aeron client is not connected", AeronException.Category.FATAL);
+
         config.setComponentName(componentName);
         config.setContext(context);
         return config;
@@ -152,11 +135,6 @@ public class AeronQuickFactory implements AutoCloseable{
     @Override
     public void close() {
         CloseHelper.closeAll(this.context.getAeron(), driver);
-    }
-
-    private void assertFactoryIsReady(){
-        if(this.context.getAeron() == null || this.context.getAeron().isClosed())
-            throw new SetupNotReadyException("Aeron client is not connected", AeronException.Category.FATAL);
     }
 
     public static class SetupNotReadyException extends AeronException {
