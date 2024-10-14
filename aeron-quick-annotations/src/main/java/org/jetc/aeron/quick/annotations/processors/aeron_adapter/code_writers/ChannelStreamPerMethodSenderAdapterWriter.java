@@ -10,6 +10,7 @@ import static org.jetc.aeron.quick.annotations.processors.aeron_adapter.code_wri
 
 public class ChannelStreamPerMethodSenderAdapterWriter extends AdapterCodeWriter {
     private static final String SENDER_ADAPTER_QUALIFIED_NAME = "org.jetc.aeron.quick.peers.sender.SenderAdapter";
+    private final String DEFAULT_INIT_BUFFER_SIZE = "256";
     private boolean needsJSONMapper = false;
 
     public ChannelStreamPerMethodSenderAdapterWriter(JavaFileObject sourceFile, AdapterConfiguration config) throws IOException {
@@ -17,52 +18,29 @@ public class ChannelStreamPerMethodSenderAdapterWriter extends AdapterCodeWriter
     }
 
     @Override
-    public void generateAdapterCode() throws IOException, AdaptingError {
+    public void generateAdapterCode() throws IOException {
         append("package ").append(((PackageElement)config.classToAdapt().getEnclosingElement()).getQualifiedName().toString()).append(";");
         newLine();
         append("""
-            import com.fasterxml.jackson.core.JsonProcessingException;
-            import org.jetc.aeron.quick.messaging.serialization.ObjectStringMapper;
-            import org.jetc.aeron.quick.AeronQuickContext;
-            import io.aeron.Aeron;
             import io.aeron.Publication;
             import org.agrona.BitUtil;
             import org.agrona.BufferUtil;
             import org.agrona.ExpandableDirectByteBuffer;
             import org.agrona.MutableDirectBuffer;
-            import org.agrona.concurrent.IdleStrategy;
-            import org.agrona.concurrent.SleepingMillisIdleStrategy;
             import org.agrona.concurrent.UnsafeBuffer;
-            import org.jetc.aeron.quick.exception.PublicationOfferFailedException;
-            import java.nio.ByteOrder;
-            import java.time.Duration;
+            import org.jetc.aeron.quick.AeronQuickContext;
+            import org.jetc.aeron.quick.messaging.publication.PublicationOfferingStrategy;
+            import org.jetc.aeron.quick.messaging.serialization.ObjectStringMapper;
             import org.jetc.aeron.quick.peers.sender.SenderConfiguration;
+            import java.nio.ByteOrder;
             """
         );
         newLine();
         append("public class ").append(config.finalAdapterName()).append(" implements ").append(SENDER_ADAPTER_QUALIFIED_NAME + "<").append(config.classToAdaptName()).append(">, ").append(config.classToAdaptName()).append("{");
         startBlock();
-        append("    private static final String PROPS_SUFFIX = \"aeron.quick.\";");
-        newLine();
         append("""
-            private final Duration idleTime = Duration.ofMillis(100);
-            private final Duration connectionTimeout = Duration.ofSeconds(5);
-            private final IdleStrategy idleStrategy = new SleepingMillisIdleStrategy(idleTime.toMillis());
-            private final long maxRetries = connectionTimeout.toMillis() / idleTime.toMillis();
-            private final int DEFAULT_INIT_BUFFER_SIZE = 256;
-            private AeronQuickContext context;
             private ObjectStringMapper mapper;
-        
-            private void offerMsg(Publication publication, MutableDirectBuffer buffer, int offset, int length) {
-                long streamPos = publication.offer(buffer, offset, length);
-                long i = 0;
-                for (; i < maxRetries && streamPos < 0; i++) {
-                    idleStrategy.idle();
-                    streamPos = publication.offer(buffer, offset, length);
-                }
-                if(i >= maxRetries)
-                    throw new PublicationOfferFailedException();
-            }
+            private PublicationOfferingStrategy offeringStrategy;
         """);
         iAppend("private final Publication[] publications = new Publication[").append(String.valueOf(config.methodsToAdapt().size())).append("];");
         newLine();
@@ -87,8 +65,8 @@ public class ChannelStreamPerMethodSenderAdapterWriter extends AdapterCodeWriter
         for (var method : config.methodsToAdapt()){
             iAppend("new ").append(
                     method.isPrimitive() ?
-                    "UnsafeBuffer(BufferUtil.allocateDirectAligned(DEFAULT_INIT_BUFFER_SIZE, 64))" :
-                    "ExpandableDirectByteBuffer(DEFAULT_INIT_BUFFER_SIZE)");
+                    "UnsafeBuffer(BufferUtil.allocateDirectAligned(" + DEFAULT_INIT_BUFFER_SIZE +", 64))" : // TODO: calculate buffer size depending on parameters
+                    "ExpandableDirectByteBuffer(" + DEFAULT_INIT_BUFFER_SIZE+ ")");
 
             if(lastMethodIx-- > 0) {
                 append(", ");
@@ -104,8 +82,9 @@ public class ChannelStreamPerMethodSenderAdapterWriter extends AdapterCodeWriter
         iAppend("public void configure(SenderConfiguration config) {");
         startBlock();
             iAppendLine("final AeronQuickContext ctx = config.getContext();");
-            iAppendLine("mapper = ctx.getObjectMapper();");
             iAppendLine("String senderName = config.getComponentName();");
+            iAppendLine("mapper = ctx.getObjectMapper();");
+            iAppendLine("offeringStrategy = config.getOfferingStrategy();");
             iAppend("final String[] methods = new String[]{");
             long lastMethodIx = config.methodsToAdapt().size() - 1;
             for (var method : config.methodsToAdapt()){
@@ -173,7 +152,7 @@ public class ChannelStreamPerMethodSenderAdapterWriter extends AdapterCodeWriter
                 paramListLenStr.append(param.getLengthStr());
 
         });
-        iAppend("offerMsg(publications[").append(methodIxStr).append("], buffer, 0, ").append(paramListLenStr).append(");");
+        iAppend("offeringStrategy.offerMessage(publications[").append(methodIxStr).append("], buffer, 0, ").append(paramListLenStr).append(");");
 
         switch (method.getReturnType()){
             case BYTE:
