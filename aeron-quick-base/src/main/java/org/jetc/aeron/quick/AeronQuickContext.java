@@ -17,6 +17,7 @@ public class AeronQuickContext {
         String value = System.getProperty(PROPS_SUFFIX + component + "." + method + "." + prop);
         if(value == null || value.isBlank())
             value = System.getProperty(PROPS_SUFFIX + prop);
+
         return value;
     }
 

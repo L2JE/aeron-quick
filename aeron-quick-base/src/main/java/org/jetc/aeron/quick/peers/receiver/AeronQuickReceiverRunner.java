@@ -10,8 +10,9 @@ public class AeronQuickReceiverRunner<T> implements AutoCloseable {
         this.serverAgentRunner = new AgentRunner(config.getAgentIdleStrategy(), config.getAgentErrorHandler(), config.getErrorCounter(), serverAgent);
     }
 
-    public void start() {
+    public AeronQuickReceiverRunner<T> start() {
         AgentRunner.startOnThread(this.serverAgentRunner);
+        return this;
     }
 
     /**

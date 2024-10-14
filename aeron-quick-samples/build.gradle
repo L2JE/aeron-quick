@@ -17,8 +17,8 @@ Project baseLibProject = project(":$baseLibrary")
 dependencies {
     annotationProcessor project(':aeron-quick-annotations')
     implementation project(':aeron-quick-annotations')
-    implementation 'org.slf4j:slf4j-simple:2.0.16'
     implementation 'org.slf4j:slf4j-api:2.0.16'
+    implementation 'org.springframework.boot:spring-boot-starter-web:3.2.5'
     implementation files(baseLibProject.layout.buildDirectory.file("libs/${baseLibrary}-${globalProjectVersion}-fat.jar").get().asFile)
 }
 
