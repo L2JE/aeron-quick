@@ -16,7 +16,7 @@ public class MyGeneralSender {
     private static final AeronQuickFactory factory = AeronQuickFactory.builder().removeAeronDirOnShutdown(true).build();
     private static final AtomicBoolean running = new AtomicBoolean(true);
 
-    @AeronQuickSender//to have the sending logic generated at compile time (if not used, a java proxy will be generated at runtime which will add a higher latency per message)
+    @AeronQuickSender//to have the sending logic generated at compile time
     private static AeronGeneralServiceContract sender;
 
     private static void aeronQuickSenderExample() {
