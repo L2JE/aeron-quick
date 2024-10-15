@@ -7,7 +7,7 @@ import io.aeron.exceptions.AeronException;
 import org.agrona.CloseHelper;
 import org.jetc.aeron.quick.annotations.AeronQuickContract;
 import org.jetc.aeron.quick.annotations.AeronQuickReceiver;
-import org.jetc.aeron.quick.annotations.QuickContractEndpoint;
+import org.jetc.aeron.quick.annotations.AeronQuickContractEndpoint;
 import org.jetc.aeron.quick.peers.PeerConfiguration;
 import org.jetc.aeron.quick.peers.adapters.Adapters;
 import org.jetc.aeron.quick.peers.adapters.exception.AdaptingException;
@@ -55,7 +55,7 @@ public class AeronQuickFactory implements AutoCloseable{
     }
     /**
      * Loads and configures Receiver Adapter generated at compile time.
-     * @param targetInstance any class marked with {@link AeronQuickReceiver @AeronQuickReceiver} will receive messages through Aeron on the methods directly/indirectly marked with {@link QuickContractEndpoint @QuickContractEndpoint}
+     * @param targetInstance any class marked with {@link AeronQuickReceiver @AeronQuickReceiver} will receive messages through Aeron on the methods directly/indirectly marked with {@link AeronQuickContractEndpoint @QuickContractEndpoint}
      * <p>
      * @param componentName used to find configuration properties at
      * <p>
@@ -85,7 +85,7 @@ public class AeronQuickFactory implements AutoCloseable{
 
     /**
      * Loads and configures Sender Adapter generated at compile time.
-     * @param targetContract an Aeron Quick Contract, any class annotated with {@link AeronQuickContract @AeronQuickContract} or at least has one method annotated with {@link QuickContractEndpoint @QuickContractEndpoint}
+     * @param targetContract an Aeron Quick Contract, any class annotated with {@link AeronQuickContract @AeronQuickContract} or at least has one method annotated with {@link AeronQuickContractEndpoint @QuickContractEndpoint}
      * <p>
      * @param componentName used to find configuration properties at
      * <p>

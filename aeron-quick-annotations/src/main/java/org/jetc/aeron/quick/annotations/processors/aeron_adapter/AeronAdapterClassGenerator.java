@@ -40,7 +40,7 @@ public class AeronAdapterClassGenerator {
     private void adapt(TypeElement classToAdapt, List<AdaptableMethod> methodsToAdapt, String adapterSuffix, ThrowingBiFunction<JavaFileObject, AdapterConfiguration, AdapterCodeWriter>  codeGenerator) {
         String classToAdaptName = classToAdapt.getSimpleName().toString();
         if(methodsToAdapt == null || methodsToAdapt.isEmpty()) {
-            String msg = "There are no methods to bind in the receiver class: " + classToAdapt.getQualifiedName() + ". Please remove the annotation or mark at least one method as QuickContractEndpoint";
+            String msg = "There are no methods to bind in the receiver class: " + classToAdapt.getQualifiedName() + ". Please remove the annotation or mark at least one method as AeronQuickContractEndpoint";
             log.warn(msg);
             throw new RuntimeException(new AdaptingError(msg));
         }

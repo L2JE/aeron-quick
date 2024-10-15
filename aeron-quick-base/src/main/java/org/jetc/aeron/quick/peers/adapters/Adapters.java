@@ -1,5 +1,6 @@
 package org.jetc.aeron.quick.peers.adapters;
 
+import org.jetc.aeron.quick.annotations.AeronQuickContractEndpoint;
 import org.jetc.aeron.quick.annotations.AeronQuickReceiver;
 import org.jetc.aeron.quick.peers.adapters.exception.AdaptingException;
 import org.jetc.aeron.quick.peers.receiver.ReceiverAdapter;
@@ -26,8 +27,8 @@ public class Adapters {
     }
 
     /**
-     * Loads and retrieves an adapter for a class (contract class) that has methods marked with {@link org.jetc.aeron.quick.annotations.QuickContractEndpoint @QuickContractEndpoint} which will bind the stream and channels to the corresponding method
-     * @param <T> Any class marked {@link org.jetc.aeron.quick.annotations.AeronQuickContract @AeronQuickContract} or having at least one method marked with {@link org.jetc.aeron.quick.annotations.QuickContractEndpoint @QuickContractEndpoint}
+     * Loads and retrieves an adapter for a class (contract class) that has methods marked with {@link AeronQuickContractEndpoint @QuickContractEndpoint} which will bind the stream and channels to the corresponding method
+     * @param <T> Any class marked {@link org.jetc.aeron.quick.annotations.AeronQuickContract @AeronQuickContract} or having at least one method marked with {@link AeronQuickContractEndpoint @QuickContractEndpoint}
      * @param contract to adapt with the compile time generated adapter
      * @return the corresponding sender adapter for the target contract or null if the class is not a valid contract
      */

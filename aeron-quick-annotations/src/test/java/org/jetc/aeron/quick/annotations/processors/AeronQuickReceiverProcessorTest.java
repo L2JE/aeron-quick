@@ -34,7 +34,7 @@ class AeronQuickReceiverProcessorTest extends JavacTest {
                                 import java.lang.annotation.RetentionPolicy;
                                 import java.lang.annotation.Target;
                                 import org.jetc.aeron.quick.annotations.AeronQuickReceiver;
-                                import org.jetc.aeron.quick.annotations.QuickContractEndpoint;
+                                import org.jetc.aeron.quick.annotations.AeronQuickContractEndpoint;
                         
                                 @AeronQuickReceiver
                                 class AeronQuickGeneralServiceServer implements AeronGeneralServiceContract {
@@ -44,7 +44,7 @@ class AeronQuickReceiverProcessorTest extends JavacTest {
                                     public long nonAdaptedMethod(){return 0;}
                                 }
                                 interface AeronGeneralServiceContract {
-                                    @QuickContractEndpoint
+                                    @AeronQuickContractEndpoint
                                     void notifyOperationDone(char extraData, int param2);
                                     long nonAdaptedMethod();
                                 }
@@ -255,7 +255,7 @@ class AeronQuickReceiverProcessorTest extends JavacTest {
     }
 
     @Test
-    void generates_adapter_string_param_adapt_single_method_marked_with_QuickContractEndpoint_in_same_class() throws IOException {
+    void generates_adapter_string_param_adapt_single_method_marked_with_AeronQuickContractEndpoint_in_same_class() throws IOException {
         String targetClassName = "AeronQuickGeneralServiceServer";
         Compilation compilation = withAeronQuickInDefaultClasspath(Compiler.javac())
                 .withProcessors(new AeronQuickReceiverProcessor())
@@ -267,11 +267,11 @@ class AeronQuickReceiverProcessorTest extends JavacTest {
                                 import java.lang.annotation.RetentionPolicy;
                                 import java.lang.annotation.Target;
                                 import org.jetc.aeron.quick.annotations.AeronQuickReceiver;
-                                import org.jetc.aeron.quick.annotations.QuickContractEndpoint;
+                                import org.jetc.aeron.quick.annotations.AeronQuickContractEndpoint;
                         
                                 @AeronQuickReceiver
                                 class AeronQuickGeneralServiceServer {
-                                    @QuickContractEndpoint
+                                    @AeronQuickContractEndpoint
                                     public void methodWStringParam(String extraData, int param2){}
                                 }
                         """)
@@ -323,7 +323,7 @@ class AeronQuickReceiverProcessorTest extends JavacTest {
     }
 
     @Test
-    void generates_adapter_only_primitive_params_adapt_single_method_marked_with_QuickContractEndpoint_in_same_class() throws IOException {
+    void generates_adapter_only_primitive_params_adapt_single_method_marked_with_AeronQuickContractEndpoint_in_same_class() throws IOException {
         String targetClassName = "AeronQuickGeneralServiceServer";
         Compilation compilation = withAeronQuickInDefaultClasspath(Compiler.javac())
                 .withProcessors(new AeronQuickReceiverProcessor())
@@ -335,11 +335,11 @@ class AeronQuickReceiverProcessorTest extends JavacTest {
                                 import java.lang.annotation.RetentionPolicy;
                                 import java.lang.annotation.Target;
                                 import org.jetc.aeron.quick.annotations.AeronQuickReceiver;
-                                import org.jetc.aeron.quick.annotations.QuickContractEndpoint;
+                                import org.jetc.aeron.quick.annotations.AeronQuickContractEndpoint;
                         
                                 @AeronQuickReceiver
                                 class AeronQuickGeneralServiceServer {
-                                    @QuickContractEndpoint
+                                    @AeronQuickContractEndpoint
                                     public void notifyOperationDone(char extraData, int param2){}
                                     public long otherMethod(){return 0;}
                                 }
@@ -392,7 +392,7 @@ class AeronQuickReceiverProcessorTest extends JavacTest {
     }
 
     @Test
-    void generates_adapter_pojo_param_adapt_single_method_marked_with_QuickContractEndpoint_in_same_class() throws IOException {
+    void generates_adapter_pojo_param_adapt_single_method_marked_with_AeronQuickContractEndpoint_in_same_class() throws IOException {
         String targetClassName = "AeronQuickGeneralServiceServer";
         Compilation compilation = withAeronQuickInDefaultClasspath(Compiler.javac())
                 .withProcessors(new AeronQuickReceiverProcessor())
@@ -404,11 +404,11 @@ class AeronQuickReceiverProcessorTest extends JavacTest {
                                 import java.lang.annotation.RetentionPolicy;
                                 import java.lang.annotation.Target;
                                 import org.jetc.aeron.quick.annotations.AeronQuickReceiver;
-                                import org.jetc.aeron.quick.annotations.QuickContractEndpoint;
+                                import org.jetc.aeron.quick.annotations.AeronQuickContractEndpoint;
                         
                                 @AeronQuickReceiver
                                 class AeronQuickGeneralServiceServer {
-                                    @QuickContractEndpoint
+                                    @AeronQuickContractEndpoint
                                     public void notifyOperationDone(char extraData, POJOExample pojoExample, int param2){}
                                     public long otherMethod(){return 0;}
                                 }
@@ -476,13 +476,13 @@ class AeronQuickReceiverProcessorTest extends JavacTest {
                                 import java.lang.annotation.RetentionPolicy;
                                 import java.lang.annotation.Target;
                                 import org.jetc.aeron.quick.annotations.AeronQuickReceiver;
-                                import org.jetc.aeron.quick.annotations.QuickContractEndpoint;
+                                import org.jetc.aeron.quick.annotations.AeronQuickContractEndpoint;
                                 import io.aeron.Aeron;
                                 import io.aeron.logbuffer.FragmentHandler;
                         
                                 @AeronQuickReceiver
                                 class AeronQuickGeneralServiceServer {
-                                    @QuickContractEndpoint
+                                    @AeronQuickContractEndpoint
                                     public FragmentHandler contextualFragmentHandlerCompatible(Aeron aeronArg){
                                         return (var1, var2, var3, var4) -> {};
                                     }
@@ -544,13 +544,13 @@ class AeronQuickReceiverProcessorTest extends JavacTest {
                                 import java.lang.annotation.RetentionPolicy;
                                 import java.lang.annotation.Target;
                                 import org.jetc.aeron.quick.annotations.AeronQuickReceiver;
-                                import org.jetc.aeron.quick.annotations.QuickContractEndpoint;
+                                import org.jetc.aeron.quick.annotations.AeronQuickContractEndpoint;
                                 import io.aeron.logbuffer.Header;
                                 import org.agrona.DirectBuffer;
                         
                                 @AeronQuickReceiver
                                 class AeronQuickGeneralServiceServer {
-                                    @QuickContractEndpoint
+                                    @AeronQuickContractEndpoint
                                     public void fragmentHandlerCompatible(DirectBuffer buff, int offset, int len, Header head){}
                                 }
                         """)
@@ -617,7 +617,7 @@ class AeronQuickReceiverProcessorTest extends JavacTest {
 
         Throwable thrown = assertThrows(RuntimeException.class, () -> compiler.compile(receiverCode));
         assertEquals(
-                "There are no methods to bind in the receiver class: org.jetc.aeron.quick.samples.general.AeronQuickGeneralServiceServer. Please remove the annotation or mark at least one method as QuickContractEndpoint",
+                "There are no methods to bind in the receiver class: org.jetc.aeron.quick.samples.general.AeronQuickGeneralServiceServer. Please remove the annotation or mark at least one method as AeronQuickContractEndpoint",
                 thrown.getCause().getCause().getMessage()
         );
     }
@@ -631,11 +631,11 @@ class AeronQuickReceiverProcessorTest extends JavacTest {
                                 import java.lang.annotation.RetentionPolicy;
                                 import java.lang.annotation.Target;
                                 import org.jetc.aeron.quick.annotations.AeronQuickReceiver;
-                                import org.jetc.aeron.quick.annotations.QuickContractEndpoint;
+                                import org.jetc.aeron.quick.annotations.AeronQuickContractEndpoint;
                         
                                 @AeronQuickReceiver
                                 class AeronQuickGeneralServiceServer {
-                                    @QuickContractEndpoint
+                                    @AeronQuickContractEndpoint
                                     public void notifyOperationDone(char extraData, Example param2){}
                                     public long otherMethod(){return 0;}
                                 }
@@ -658,11 +658,11 @@ class AeronQuickReceiverProcessorTest extends JavacTest {
                                 import java.lang.annotation.RetentionPolicy;
                                 import java.lang.annotation.Target;
                                 import org.jetc.aeron.quick.annotations.AeronQuickReceiver;
-                                import org.jetc.aeron.quick.annotations.QuickContractEndpoint;
+                                import org.jetc.aeron.quick.annotations.AeronQuickContractEndpoint;
                         
                                 @AeronQuickReceiver
                                 class AeronQuickGeneralServiceServer {
-                                    @QuickContractEndpoint
+                                    @AeronQuickContractEndpoint
                                     public void notifyOperationDone(char extraData, int[] param2){}
                                     public long otherMethod(){return 0;}
                                 }

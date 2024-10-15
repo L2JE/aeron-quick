@@ -1,6 +1,6 @@
 package org.jetc.aeron.quick.annotations.processors.utils;
 
-import org.jetc.aeron.quick.annotations.QuickContractEndpoint;
+import org.jetc.aeron.quick.annotations.AeronQuickContractEndpoint;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.TypeKind;
@@ -20,7 +20,7 @@ public class AdaptableMethod {
     }
 
     public String getPropName() {
-        QuickContractEndpoint markData = method.getAnnotation(QuickContractEndpoint.class);
+        AeronQuickContractEndpoint markData = method.getAnnotation(AeronQuickContractEndpoint.class);
         return (markData != null && !markData.name().isBlank()) ? markData.name() : method.getSimpleName().toString();
     }
 

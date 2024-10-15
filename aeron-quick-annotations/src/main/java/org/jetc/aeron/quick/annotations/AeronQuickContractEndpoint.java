@@ -19,7 +19,7 @@ import java.lang.annotation.Target;
  */
 @Target({ElementType.METHOD})
 @Retention(RetentionPolicy.RUNTIME)
-public @interface QuickContractEndpoint {
+public @interface AeronQuickContractEndpoint {
     /**
      * The unique name to identify this endpoint in a receiver/emitter and the on will be used to configure the system property
      * {@code @QuickContractEndpoint(name = "name_example")}

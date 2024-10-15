@@ -2,7 +2,7 @@ package org.jetc.aeron.quick.annotations.processors;
 
 import org.jetc.aeron.quick.annotations.AeronQuickContract;
 import org.jetc.aeron.quick.annotations.AeronQuickReceiver;
-import org.jetc.aeron.quick.annotations.QuickContractEndpoint;
+import org.jetc.aeron.quick.annotations.AeronQuickContractEndpoint;
 import org.jetc.aeron.quick.annotations.processors.aeron_adapter.AeronAdapterClassGenerator;
 import org.jetc.aeron.quick.annotations.processors.utils.AdaptableMethod;
 import org.jetc.aeron.quick.annotations.processors.utils.AnnotationResolver;
@@ -14,7 +14,6 @@ import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.TypeElement;
-import javax.tools.Diagnostic;
 import java.lang.annotation.Annotation;
 import java.util.HashSet;
 import java.util.List;
@@ -24,7 +23,7 @@ import java.util.function.Consumer;
 public abstract class AeronQuickContractProcessor extends AbstractProcessor {
     private final AnnotationResolver annotationResolver = new AnnotationResolver();
     protected AeronAdapterClassGenerator creator;
-    private static final Class<Annotation>[] CONTRACT_ANNOTATIONS = new Class[]{QuickContractEndpoint.class};
+    private static final Class<Annotation>[] CONTRACT_ANNOTATIONS = new Class[]{AeronQuickContractEndpoint.class};
     private static final String ANNOTATION_CONTRACT_FIELD = "contract";
     private final Set<String> processedContracts = new HashSet<>();
 
@@ -73,7 +72,7 @@ public abstract class AeronQuickContractProcessor extends AbstractProcessor {
     }
 
     /**
-     * Allows consuming every method directly (in the receiverClass) or indirectly (in an interface) marked with a contract annotation (eg: {@link QuickContractEndpoint @QuickContractEndpoint} or
+     * Allows consuming every method directly (in the receiverClass) or indirectly (in an interface) marked with a contract annotation (eg: {@link AeronQuickContractEndpoint @QuickContractEndpoint} or
      * any annotation that marks a method that will be bound to an aeron stream)
      * @param targetClass a class marked with {@link @AeronQuickReceiver}
      * @param consumer that will consume each method that is part of the receiver contract
