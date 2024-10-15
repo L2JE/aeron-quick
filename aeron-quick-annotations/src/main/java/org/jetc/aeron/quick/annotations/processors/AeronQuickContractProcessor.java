@@ -49,11 +49,9 @@ public abstract class AeronQuickContractProcessor extends AbstractProcessor {
             return false;
 
         annotatedElements.forEach(e -> {
-            processingEnv.getMessager().printMessage(Diagnostic.Kind.NOTE, "Checking!!! " + e.asType().toString());
             TypeElement contractElement = getMessagingRoleElement(e);
             if(contractElement != null) {
                 String contractName = contractElement.toString();
-                processingEnv.getMessager().printMessage(Diagnostic.Kind.NOTE, "Processing!!! " + contractName);
                 if(!processedContracts.contains(contractName)){
                     FirstAddedExecutableOnlyCollection methodsToAdapt = new FirstAddedExecutableOnlyCollection();
                     forEachContractMethod(contractElement, methodsToAdapt::add);
