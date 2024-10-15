@@ -6,7 +6,7 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 /**
- * Shorthand for marking all methods as {@link QuickContractEndpoint @QuickContractEndpoint}
+ * Shorthand for marking all methods as {@link AeronQuickContractEndpoint @QuickContractEndpoint}
  **/
 @Target({ElementType.TYPE})
 @Retention(RetentionPolicy.RUNTIME)
