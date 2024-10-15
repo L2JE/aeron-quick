@@ -51,6 +51,5 @@ public class AeronQuickSenderProcessor extends AeronQuickContractProcessor {
     @Override
     public synchronized void init(ProcessingEnvironment processingEnv) {
         super.init(processingEnv);
-        processingEnv.getMessager().printMessage(Diagnostic.Kind.NOTE, "INITIALIZING Processor SENDER");
     }
 }
