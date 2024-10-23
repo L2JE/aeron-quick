@@ -11,7 +11,7 @@ import java.lang.annotation.Target;
  * <p>
  * If a class is marked with this annotation it must have methods marked with {@link AeronQuickContractEndpoint} (directly in the class or indirectly from an interface).
  **/
-@Target({ElementType.FIELD, ElementType.METHOD})
+@Target({ElementType.METHOD})
 @Retention(RetentionPolicy.SOURCE)
 public @interface AeronQuickSender {
     /**

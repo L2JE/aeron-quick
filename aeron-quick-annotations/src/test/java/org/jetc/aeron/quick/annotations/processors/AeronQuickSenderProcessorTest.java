@@ -31,7 +31,7 @@ class AeronQuickSenderProcessorTest extends JavacTest {
                                         public class ClassWithSender {
                                             private static final AeronQuickFactory factory = AeronQuickFactory.builder().build();
                                             @AeronQuickSender
-                                            private AeronGeneralServiceContract senderInstanceField;
+                                            private AeronGeneralServiceContract senderInstanceField(){ return null; };
                                         }
                                         @AeronQuickContract
                                         interface AeronGeneralServiceContract {
@@ -113,7 +113,7 @@ class AeronQuickSenderProcessorTest extends JavacTest {
                                         public class ClassWithSender {
                                             private static final AeronQuickFactory factory = AeronQuickFactory.builder().build();
                                             @AeronQuickSender(concurrent = true)
-                                            private AeronGeneralServiceContract senderInstanceField;
+                                            private AeronGeneralServiceContract senderInstanceField(){ return null; }
                                         }
                                         @AeronQuickContract
                                         interface AeronGeneralServiceContract {
