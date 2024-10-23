@@ -1,9 +1,13 @@
 package org.jetc.aeron.quick.annotations.processors.aeron_adapter;
 
+import org.jetc.aeron.quick.annotations.AeronQuickSender;
 import org.jetc.aeron.quick.annotations.processors.AnnotationLogger;
 import org.jetc.aeron.quick.annotations.processors.aeron_adapter.code_writers.AdapterCodeWriter;
 import org.jetc.aeron.quick.annotations.processors.aeron_adapter.code_writers.ChannelStreamPerMethodReceiverAdapterWriter;
 import org.jetc.aeron.quick.annotations.processors.aeron_adapter.code_writers.ChannelStreamPerMethodSenderAdapterWriter;
+import org.jetc.aeron.quick.annotations.processors.aeron_adapter.code_writers.fragments.sender.MultiThreadFragmentWriter;
+import org.jetc.aeron.quick.annotations.processors.aeron_adapter.code_writers.fragments.sender.SenderFragmentWriter;
+import org.jetc.aeron.quick.annotations.processors.aeron_adapter.code_writers.fragments.sender.SingleThreadFragmentWriter;
 import org.jetc.aeron.quick.annotations.processors.utils.AdaptableMethod;
 import org.jetc.aeron.quick.annotations.processors.utils.AdaptingError;
 import org.jetc.aeron.quick.annotations.processors.utils.ThrowingBiFunction;
@@ -24,8 +28,12 @@ public class AeronAdapterClassGenerator {
         this.log = new AnnotationLogger(messager);
     }
 
-    public void adaptSender(TypeElement classToAdapt, List<AdaptableMethod> methodsToAdapt) {
-        adapt(classToAdapt, methodsToAdapt, AdapterConfiguration.SENDER_SUFFIX, ChannelStreamPerMethodSenderAdapterWriter::new);
+    public void adaptSender(TypeElement classToAdapt, List<AdaptableMethod> methodsToAdapt, AeronQuickSender config) {
+        final SenderFragmentWriter fragmentWriter = config.concurrent() ?
+            new MultiThreadFragmentWriter("ctx", "senderName") :
+            new SingleThreadFragmentWriter("ctx", "senderName");
+
+        adapt(classToAdapt, methodsToAdapt, AdapterConfiguration.SENDER_SUFFIX, (source, cfg) -> new ChannelStreamPerMethodSenderAdapterWriter(source, cfg, fragmentWriter));
     }
 
     public void adaptReceiver(TypeElement classToAdapt, List<AdaptableMethod> methodsToAdapt) {

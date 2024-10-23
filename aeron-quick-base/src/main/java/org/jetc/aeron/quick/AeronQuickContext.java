@@ -13,6 +13,11 @@ public class AeronQuickContext {
        return Integer.parseInt(getProperty(component, method, prop));
    }
 
+    public int getIntProperty(String component, String method, String prop, int defaultVal){
+        String val = getProperty(component, method, prop);
+        return val != null ? Integer.parseInt(val) : defaultVal;
+    }
+
     public String getProperty(String component, String method, String prop){
         String value = System.getProperty(PROPS_SUFFIX + component + "." + method + "." + prop);
         if(value == null || value.isBlank())

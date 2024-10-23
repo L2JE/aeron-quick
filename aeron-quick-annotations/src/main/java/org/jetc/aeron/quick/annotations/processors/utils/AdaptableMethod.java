@@ -24,6 +24,13 @@ public class AdaptableMethod {
         return (markData != null && !markData.name().isBlank()) ? markData.name() : method.getSimpleName().toString();
     }
 
+    public String getEquivalentParameterBufferStr(){
+        String DEFAULT_INIT_BUFFER_SIZE = "256";
+        return isPrimitive() ?
+                "new UnsafeBuffer(BufferUtil.allocateDirectAligned(" + DEFAULT_INIT_BUFFER_SIZE +", 64))" : // TODO: calculate buffer size depending on parameters
+                "new ExpandableDirectByteBuffer(" + DEFAULT_INIT_BUFFER_SIZE + ")";
+    }
+
     public void forEachParam(ThrowableBiConsumer<AdaptableParam, Integer> consumer) throws Exception {
         int ix = 0;
 

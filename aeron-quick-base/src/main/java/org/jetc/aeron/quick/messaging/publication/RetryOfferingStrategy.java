@@ -19,13 +19,17 @@ public class RetryOfferingStrategy implements PublicationOfferingStrategy{
 
 
     @Override
-    public void offerMessage(Publication publication, MutableDirectBuffer buffer, int offset, int length) throws PublicationOfferFailedException {
+    public void offerMessage(Publication publication, MutableDirectBuffer buffer, int offset, int length, Consumer<MutableDirectBuffer> releaseBufferAction) throws PublicationOfferFailedException {
         long streamPos = publication.offer(buffer, offset, length);
         long i = 0;
         for (; i < maxRetry && streamPos < 0; i++) {
             idleStrategy.idle();
             streamPos = publication.offer(buffer, offset, length);
         }
+
+        if(releaseBufferAction != null)
+            releaseBufferAction.accept(buffer);
+
         if(sideAction != null)
             sideAction.accept(streamPos);
     }

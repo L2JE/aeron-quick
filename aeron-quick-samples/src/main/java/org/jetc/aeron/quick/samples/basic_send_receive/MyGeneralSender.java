@@ -11,26 +11,35 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import java.time.Duration;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.stream.IntStream;
 
 public class MyGeneralSender {
+    private static final int THREAD_COUNT = 10;
+
     private static final Logger log = LoggerFactory.getLogger(MyGeneralSender.class);
     private static final AeronQuickFactory factory = AeronQuickFactory.builder().removeAeronDirOnShutdown(true).build();
     private static final AtomicBoolean running = new AtomicBoolean(true);
-
-    @AeronQuickSender//to have the sending logic generated at compile time
     private static AeronGeneralServiceContract sender;
+
+    @AeronQuickSender(concurrent = THREAD_COUNT > 1)
+    private static AeronGeneralServiceContract getSender(){
+        if(sender == null)
+            sender = factory.getSender(AeronGeneralServiceContract.class, "senderExample", c -> c.setOfferingSideAction(OfferingResultSideActions.throwOnFailed()));
+
+        return sender;
+    }
 
     private static void aeronQuickSenderExample() {
         SigInt.register(() -> running.set(false));
         IdleStrategy idleStrategy = new SleepingMillisIdleStrategy(1000);
-        sender = factory.getSender(AeronGeneralServiceContract.class, "senderExample", c -> c.setOfferingSideAction(OfferingResultSideActions.throwOnFailed()));
+        AeronGeneralServiceContract mySender = getSender();
 
         for(long it = 0; running.get(); it++) {
             try {
                 if(it % 2 == 0)
-                    sender.duplicateNumber(it);
+                    mySender.duplicateNumber(it);
                 else
-                    sender.notifyOperationDone(new ExamplePojo("iteration-"+it, (int)it), (int)(it +1));
+                    mySender.notifyOperationDone(new ExamplePojo(" iteration-"+it, (int)it), (int)(it +1));
 
                 log.info("Sent message %s successfully".formatted(it));
             } catch (PublicationOfferFailedException e){
@@ -47,7 +56,13 @@ public class MyGeneralSender {
         setMockSysProps();
         log.warn("STARTING CLIENT");
 
-        Thread.startVirtualThread(MyGeneralSender::aeronQuickSenderExample);
+        IntStream.range(0, THREAD_COUNT)
+                .mapToObj(i -> {
+                    Thread t = Thread.ofVirtual().unstarted(MyGeneralSender::aeronQuickSenderExample);
+                    t.setName("Thread " + i);
+                    return t;
+                })
+                .forEach(Thread::start);
 
         Thread.sleep(Duration.ofMinutes(5));
         log.warn("STOPPING CLIENT");

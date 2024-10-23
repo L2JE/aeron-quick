@@ -35,7 +35,8 @@ public class OfferingResultSideActions {
 
     public static Consumer<Long> throwOnFailed(){
         return i -> {
-            throw new PublicationOfferFailedException();
+            if(i < 0)
+                throw new PublicationOfferFailedException();
         };
     }
 

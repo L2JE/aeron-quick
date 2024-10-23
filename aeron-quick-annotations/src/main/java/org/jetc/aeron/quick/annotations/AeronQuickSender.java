@@ -18,4 +18,6 @@ public @interface AeronQuickSender {
      * If not defined it will be taken from the type of the method return value, local variable or class attribute
      */
     Class<?> contract() default NullType.class;
+
+    boolean concurrent() default false;
 }
