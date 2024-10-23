@@ -13,7 +13,7 @@ import static org.jetc.aeron.quick.annotations.processors.utils.FullyQualifiedCl
 public class ChannelStreamPerMethodReceiverAdapterWriter extends AdapterCodeWriter {
     private static final String RECEIVER_ADAPTER_QUALIFIED_NAME = "org.jetc.aeron.quick.peers.receiver.ReceiverAdapter";
     private static final int DEFAULT_FRAGMENT_LIMIT = 3;
-    private static final String CONTEXTUAL_HANDLER_1ST_LINE = "aeron -> (buffer, offset, length, header) -> {";
+    private static final String HANDLER_1ST_LINE = "(buffer, offset, length, header) -> {";
     private static final String DEFAULT_SERVER_PARAM_NAME = "server";
     private boolean needsJSONMapper = false;
 
@@ -99,10 +99,9 @@ public class ChannelStreamPerMethodReceiverAdapterWriter extends AdapterCodeWrit
         newLine();
 
         switch (method.getMethodKind()){
-            case CONTEXTUAL_HANDLER -> iAppend(DEFAULT_SERVER_PARAM_NAME + "::" + method.getSimpleName());
             case FRAGMENT_HANDLER -> iAppend("aeron -> "+ DEFAULT_SERVER_PARAM_NAME + "::" + method.getSimpleName());
             case COMMON -> {
-                iAppend(CONTEXTUAL_HANDLER_1ST_LINE);
+                iAppend(HANDLER_1ST_LINE);
                 startBlock();
 
                 try {

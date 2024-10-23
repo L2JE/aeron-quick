@@ -22,7 +22,7 @@ public class HandlerPerBindingAgent implements Agent {
         this.subscriptions = channelBindings.stream().map(b ->
                 new SubscriptionData(
                     aeron.addSubscription(b.channel(), b.streamID()),
-                    b.meta().handlerProvider().getHandler(aeron),
+                    b.meta().handler(),
                     b.meta()
                 )
         ).toArray(SubscriptionData[]::new);

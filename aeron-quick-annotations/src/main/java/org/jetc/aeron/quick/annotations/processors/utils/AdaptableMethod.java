@@ -7,7 +7,6 @@ import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
 import java.util.LinkedList;
 import java.util.List;
-import static org.jetc.aeron.quick.annotations.processors.utils.InterfaceCompatibilityUtils.methodIsContextualFragmentHandler;
 import static org.jetc.aeron.quick.annotations.processors.utils.InterfaceCompatibilityUtils.methodIsFragmentHandler;
 import static org.jetc.aeron.quick.annotations.processors.utils.FullyQualifiedClassNames.STRING_TYPE;
 
@@ -62,9 +61,6 @@ public class AdaptableMethod {
         MethodKind kind = MethodKind.COMMON;
         if(methodIsFragmentHandler(this.method))
             kind = MethodKind.FRAGMENT_HANDLER;
-
-        if(methodIsContextualFragmentHandler(this.method))
-            kind = MethodKind.CONTEXTUAL_HANDLER;
 
         return kind;
     }
@@ -156,7 +152,6 @@ public class AdaptableMethod {
 
     public enum MethodKind {
         FRAGMENT_HANDLER,
-        CONTEXTUAL_HANDLER,
         COMMON
     }
 }
