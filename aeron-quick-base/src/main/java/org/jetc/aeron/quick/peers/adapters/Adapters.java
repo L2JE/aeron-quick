@@ -18,12 +18,12 @@ public class Adapters {
      * @param <T> Any class marked with {@link AeronQuickReceiver @AeronQuickServer}
      */
     @SuppressWarnings("unchecked")
-    public static <T> ReceiverAdapter<T> adaptReceiver(T receiverInstance) throws AdaptingException {
+    public static <T> ReceiverAdapter<T, ?> adaptReceiver(T receiverInstance) throws AdaptingException {
         Class<T> receiverClass = (Class<T>) receiverInstance.getClass();
         if(receiverClass.getAnnotation(AeronQuickReceiver.class) == null)
             throw new RuntimeException("The target receiver (%s) must be annotated with %s in order to have a compile time generated adapter".formatted(receiverClass.getCanonicalName(), AeronQuickReceiver.class.getCanonicalName()));
 
-        return (ReceiverAdapter<T>) instantiateAdapter(receiverClass, ReceiverAdapter.class ,RECEIVER_ADAPTER_SUFFIX);
+        return (ReceiverAdapter<T, ?>) instantiateAdapter(receiverClass, ReceiverAdapter.class, RECEIVER_ADAPTER_SUFFIX);
     }
 
     /**
