@@ -20,6 +20,7 @@ dependencies {
     api libs.jsonMapping
     implementation project(':aeron-quick-annotations')
     implementation 'org.slf4j:slf4j-api:2.0.16'
+    implementation 'com.lmax:disruptor:4.0.0'
     testImplementation libs.junit
     testImplementation libs.junitEngine
 }

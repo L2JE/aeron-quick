@@ -19,9 +19,16 @@ public class AeronQuickContext {
     }
 
     public String getProperty(String component, String method, String prop){
-        String value = System.getProperty(PROPS_SUFFIX + component + "." + method + "." + prop);
-        if(value == null || value.isBlank())
+        String fullPropStr = PROPS_SUFFIX + component + "." + method + "." + prop;
+        String value = System.getProperty(fullPropStr);
+
+        if(value == null || value.isBlank()) {
+            value = System.getProperty(PROPS_SUFFIX + component + "." + prop);
+        }
+
+        if(value == null || value.isBlank()) {
             value = System.getProperty(PROPS_SUFFIX + prop);
+        }
 
         return value;
     }

@@ -18,4 +18,6 @@ public @interface AeronQuickReceiver {
      * If not defined it is assumed that the class is a direct implementor of an interface/class that has methods annotated with {@link AeronQuickContractEndpoint}
      */
     Class<?> contract() default NullType.class;
+
+    boolean concurrent() default false;
 }
