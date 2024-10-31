@@ -1,4 +1,4 @@
-package org.jetc.aeron.quick.exception;
+package org.jetc.aeron.quick.messaging.publication.exception;
 
 public class PublicationOfferFailedException extends RuntimeException{
 }

@@ -1,13 +1,13 @@
 package org.jetc.aeron.quick.peers.receiver;
 
+import org.agrona.concurrent.Agent;
 import org.agrona.concurrent.AgentRunner;
 
 public class AeronQuickReceiverRunner<T> implements AutoCloseable {
     private final AgentRunner serverAgentRunner;
 
-    public AeronQuickReceiverRunner(ReceiverAgentConfiguration<T> config){
-        HandlerPerBindingAgent serverAgent = new HandlerPerBindingAgent(config.getContext().getAeron(), config.getBindingsList());
-        this.serverAgentRunner = new AgentRunner(config.getAgentIdleStrategy(), config.getAgentErrorHandler(), config.getErrorCounter(), serverAgent);
+    public AeronQuickReceiverRunner(ReceiverAgentConfiguration<T> config, Agent agent){
+        this.serverAgentRunner = new AgentRunner(config.getAgentIdleStrategy(), config.getAgentErrorHandler(), config.getErrorCounter(), agent);
     }
 
     public AeronQuickReceiverRunner<T> start() {

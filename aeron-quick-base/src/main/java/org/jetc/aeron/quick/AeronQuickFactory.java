@@ -12,6 +12,7 @@ import org.jetc.aeron.quick.peers.PeerConfiguration;
 import org.jetc.aeron.quick.peers.adapters.Adapters;
 import org.jetc.aeron.quick.peers.adapters.exception.AdaptingException;
 import org.jetc.aeron.quick.peers.receiver.AeronQuickReceiverRunner;
+import org.jetc.aeron.quick.peers.receiver.HandlerPerBindingAgent;
 import org.jetc.aeron.quick.peers.receiver.ReceiverAdapter;
 import org.jetc.aeron.quick.peers.receiver.ReceiverAgentConfiguration;
 import org.jetc.aeron.quick.peers.sender.SenderAdapter;
@@ -77,10 +78,10 @@ public class AeronQuickFactory implements AutoCloseable{
             digest.accept(config);
         }
 
-        ReceiverAdapter<T> adapter = Adapters.adaptReceiver(targetInstance);
+        ReceiverAdapter<T, ?> adapter = Adapters.adaptReceiver(targetInstance);
         adapter.configure(config);
 
-        return new AeronQuickReceiverRunner<>(config);
+        return new AeronQuickReceiverRunner<>(config, new HandlerPerBindingAgent(config.getContext().getAeron(), adapter.getBindings()));
     }
 
     /**

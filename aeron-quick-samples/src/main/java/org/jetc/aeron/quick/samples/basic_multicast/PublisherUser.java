@@ -18,16 +18,20 @@ public class PublisherUser {
     private static Duration idleTime = Duration.ofSeconds(2);
 
     @AeronQuickSender
-    private static SenderContract publisher;
+    private static SenderContract publisher(){
+        if(p == null)
+            p = factory.getSender(SenderContract.class, "publisher1", c -> c.setOfferingSideAction(OfferingResultSideActions.logResult(log)));
+        return p;
+    }
+    private static SenderContract p;
 
     public static void main(String[] args) throws InterruptedException {
         setMockSysProps();
-        publisher = factory.getSender(SenderContract.class, "publisher1", c -> c.setOfferingSideAction(OfferingResultSideActions.logResult(log)));
         log.warn("STARTING");
 
         for (int i = 0; i < MAX_MESSAGES; i++) {
             log.warn("Publishing user %s ".formatted(i));
-            publisher.userAdded(
+            publisher().userAdded(
                     new User(i, "user-" + i, new Date(1990, Calendar.NOVEMBER, i + 1)),
                     LocalDateTime.now().toInstant(ZoneOffset.UTC).toEpochMilli()
             );

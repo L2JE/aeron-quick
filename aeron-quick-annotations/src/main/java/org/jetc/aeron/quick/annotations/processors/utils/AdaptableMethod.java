@@ -7,7 +7,6 @@ import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
 import java.util.LinkedList;
 import java.util.List;
-import static org.jetc.aeron.quick.annotations.processors.utils.InterfaceCompatibilityUtils.methodIsContextualFragmentHandler;
 import static org.jetc.aeron.quick.annotations.processors.utils.InterfaceCompatibilityUtils.methodIsFragmentHandler;
 import static org.jetc.aeron.quick.annotations.processors.utils.FullyQualifiedClassNames.STRING_TYPE;
 
@@ -19,9 +18,19 @@ public class AdaptableMethod {
         this.method = method;
     }
 
+    /**
+     * @return the name on the annotation or the name of the method itself
+     */
     public String getPropName() {
         AeronQuickContractEndpoint markData = method.getAnnotation(AeronQuickContractEndpoint.class);
         return (markData != null && !markData.name().isBlank()) ? markData.name() : method.getSimpleName().toString();
+    }
+
+    public String getEquivalentParameterBufferStr(){
+        String DEFAULT_INIT_BUFFER_SIZE = "256";
+        return isPrimitive() ?
+                "new UnsafeBuffer(BufferUtil.allocateDirectAligned(" + DEFAULT_INIT_BUFFER_SIZE +", 64))" : // TODO: calculate buffer size depending on parameters
+                "new ExpandableDirectByteBuffer(" + DEFAULT_INIT_BUFFER_SIZE + ")";
     }
 
     public void forEachParam(ThrowableBiConsumer<AdaptableParam, Integer> consumer) throws Exception {
@@ -55,9 +64,6 @@ public class AdaptableMethod {
         MethodKind kind = MethodKind.COMMON;
         if(methodIsFragmentHandler(this.method))
             kind = MethodKind.FRAGMENT_HANDLER;
-
-        if(methodIsContextualFragmentHandler(this.method))
-            kind = MethodKind.CONTEXTUAL_HANDLER;
 
         return kind;
     }
@@ -149,7 +155,6 @@ public class AdaptableMethod {
 
     public enum MethodKind {
         FRAGMENT_HANDLER,
-        CONTEXTUAL_HANDLER,
         COMMON
     }
 }

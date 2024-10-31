@@ -16,17 +16,17 @@ public abstract class AdapterCodeWriter extends BufferedWriter {
         this.config = config;
     }
 
-    protected void startBlock() throws IOException {
+    public void startBlock() throws IOException {
         indent++;
         newLine();
     }
 
-    protected void endBlock() throws IOException {
+    public void endBlock() throws IOException {
         indent--;
         newLine();
     }
 
-    protected Writer iAppendLine(CharSequence csq) throws IOException {
+    public Writer iAppendLine(CharSequence csq) throws IOException {
         iAppend(csq);
         newLine();
         return this;
@@ -44,7 +44,7 @@ public abstract class AdapterCodeWriter extends BufferedWriter {
      * @throws  IOException
      *          If an I/O error occurs
      */
-    protected Writer iAppend(CharSequence csq) throws IOException {
+    public Writer iAppend(CharSequence csq) throws IOException {
         ind();
         return append(csq);
     }

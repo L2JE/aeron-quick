@@ -38,7 +38,7 @@ public abstract class AeronQuickContractProcessor extends AbstractProcessor {
      */
     protected abstract Class<? extends Annotation> getMessagingRoleAnnotation();
 
-    protected abstract void processContractMethods(TypeElement classToAdapt, List<AdaptableMethod> methodsToAdapt);
+    protected abstract void processContractMethods(TypeElement classToAdapt, List<AdaptableMethod> methodsToAdapt, Annotation targetAnnotation);
 
     @Override
     public boolean process(Set<? extends TypeElement> annotations, RoundEnvironment roundEnv) {
@@ -55,7 +55,7 @@ public abstract class AeronQuickContractProcessor extends AbstractProcessor {
                     FirstAddedExecutableOnlyCollection methodsToAdapt = new FirstAddedExecutableOnlyCollection();
                     forEachContractMethod(contractElement, methodsToAdapt::add);
 
-                    processContractMethods(contractElement, methodsToAdapt.asList(AdaptableMethod::new));
+                    processContractMethods(contractElement, methodsToAdapt.asList(AdaptableMethod::new), e.getAnnotation(getMessagingRoleAnnotation()));
                     processedContracts.add(contractName);
                 }
             }

@@ -1,7 +1,7 @@
 package org.jetc.aeron.quick.messaging.publication;
 
 import io.aeron.Publication;
-import org.jetc.aeron.quick.exception.PublicationOfferFailedException;
+import org.jetc.aeron.quick.messaging.publication.exception.PublicationOfferFailedException;
 import org.jetc.aeron.quick.peers.sender.SenderConfiguration;
 import org.slf4j.Logger;
 import java.util.function.Consumer;
@@ -35,7 +35,8 @@ public class OfferingResultSideActions {
 
     public static Consumer<Long> throwOnFailed(){
         return i -> {
-            throw new PublicationOfferFailedException();
+            if(i < 0)
+                throw new PublicationOfferFailedException();
         };
     }
 

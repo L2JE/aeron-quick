@@ -8,7 +8,6 @@ import javax.annotation.processing.SupportedSourceVersion;
 import javax.lang.model.SourceVersion;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.TypeElement;
-import javax.tools.Diagnostic;
 import java.lang.annotation.Annotation;
 import java.util.List;
 
@@ -41,7 +40,7 @@ public class AeronQuickReceiverProcessor extends AeronQuickContractProcessor {
     }
 
     @Override
-    protected void processContractMethods(TypeElement classToAdapt, List<AdaptableMethod> methodsToAdapt) {
-        creator.adaptReceiver(classToAdapt, methodsToAdapt);
+    protected void processContractMethods(TypeElement classToAdapt, List<AdaptableMethod> methodsToAdapt, Annotation targetAnnotation) {
+        creator.adaptReceiver(classToAdapt, methodsToAdapt, (AeronQuickReceiver) targetAnnotation);
     }
 }

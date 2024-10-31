@@ -17,9 +17,4 @@ public class InterfaceCompatibilityUtils {
         }
         return true;
     }
-    public static boolean methodIsContextualFragmentHandler(ExecutableElement method){
-        var params = method.getParameters();
-        return method.getReturnType().toString().equals("io.aeron.logbuffer.FragmentHandler") &&
-                params != null && params.size() == 1 && params.getFirst().asType().toString().equals("io.aeron.Aeron");
-    }
 }

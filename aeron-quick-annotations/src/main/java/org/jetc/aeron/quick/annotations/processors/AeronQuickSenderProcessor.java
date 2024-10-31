@@ -29,9 +29,6 @@ public class AeronQuickSenderProcessor extends AeronQuickContractProcessor {
         if(e.getKind().equals(ElementKind.METHOD) && e instanceof ExecutableElement method)
             mirror = method.getReturnType();
 
-        if(e.getKind().equals(ElementKind.FIELD))
-            mirror = e.asType();
-
         return mirror != null ? (TypeElement) processingEnv.getTypeUtils().asElement(mirror) : null;
     }
 
@@ -44,8 +41,8 @@ public class AeronQuickSenderProcessor extends AeronQuickContractProcessor {
     }
 
     @Override
-    protected void processContractMethods(TypeElement classToAdapt, List<AdaptableMethod> methodsToAdapt) {
-        creator.adaptSender(classToAdapt, methodsToAdapt);
+    protected void processContractMethods(TypeElement classToAdapt, List<AdaptableMethod> methodsToAdapt, Annotation targetAnnotation) {
+        creator.adaptSender(classToAdapt, methodsToAdapt, (AeronQuickSender) targetAnnotation);
     }
 
     @Override

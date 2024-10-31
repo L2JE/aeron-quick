@@ -1,6 +1,6 @@
 package org.jetc.aeron.quick.messaging.subscription;
 
-import org.jetc.aeron.quick.messaging.fragment_handling.ContextualHandler;
+import io.aeron.logbuffer.FragmentHandler;
 
-public record SubscriptionMeta(ContextualHandler handlerProvider, int fragmentLimit){
+public record SubscriptionMeta(FragmentHandler handler, int fragmentLimit){
 }

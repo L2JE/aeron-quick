@@ -1,8 +1,9 @@
 package org.jetc.aeron.quick.annotations.processors.aeron_adapter.code_writers;
 
 import org.jetc.aeron.quick.annotations.processors.aeron_adapter.AdapterConfiguration;
+import org.jetc.aeron.quick.annotations.processors.aeron_adapter.code_writers.fragments.sender.SenderFragmentWriter;
 import org.jetc.aeron.quick.annotations.processors.utils.AdaptableMethod;
-import org.jetc.aeron.quick.annotations.processors.utils.AdaptingError;
+
 import javax.lang.model.element.PackageElement;
 import javax.tools.JavaFileObject;
 import java.io.IOException;
@@ -10,11 +11,12 @@ import static org.jetc.aeron.quick.annotations.processors.aeron_adapter.code_wri
 
 public class ChannelStreamPerMethodSenderAdapterWriter extends AdapterCodeWriter {
     private static final String SENDER_ADAPTER_QUALIFIED_NAME = "org.jetc.aeron.quick.peers.sender.SenderAdapter";
-    private final String DEFAULT_INIT_BUFFER_SIZE = "256";
+    private final SenderFragmentWriter fragmentWriter;
     private boolean needsJSONMapper = false;
 
-    public ChannelStreamPerMethodSenderAdapterWriter(JavaFileObject sourceFile, AdapterConfiguration config) throws IOException {
+    public ChannelStreamPerMethodSenderAdapterWriter(JavaFileObject sourceFile, AdapterConfiguration config, SenderFragmentWriter fragmentWriter) throws IOException {
         super(sourceFile, config);
+        this.fragmentWriter = fragmentWriter;
     }
 
     @Override
@@ -35,6 +37,7 @@ public class ChannelStreamPerMethodSenderAdapterWriter extends AdapterCodeWriter
             import java.nio.ByteOrder;
             """
         );
+        fragmentWriter.writeImportsFragment(this);
         newLine();
         append("public class ").append(config.finalAdapterName()).append(" implements ").append(SENDER_ADAPTER_QUALIFIED_NAME + "<").append(config.classToAdaptName()).append(">, ").append(config.classToAdaptName()).append("{");
         startBlock();
@@ -59,22 +62,9 @@ public class ChannelStreamPerMethodSenderAdapterWriter extends AdapterCodeWriter
     }
 
     private void writeBuffersAttribute() throws IOException {
-        iAppend("private final MutableDirectBuffer[] buffers = new MutableDirectBuffer[]{");
-        startBlock();
-        long lastMethodIx = config.methodsToAdapt().size() - 1;
-        for (var method : config.methodsToAdapt()){
-            iAppend("new ").append(
-                    method.isPrimitive() ?
-                    "UnsafeBuffer(BufferUtil.allocateDirectAligned(" + DEFAULT_INIT_BUFFER_SIZE +", 64))" : // TODO: calculate buffer size depending on parameters
-                    "ExpandableDirectByteBuffer(" + DEFAULT_INIT_BUFFER_SIZE+ ")");
-
-            if(lastMethodIx-- > 0) {
-                append(", ");
-                newLine();
-            }
-        }
-        endBlock();
-        iAppendLine("};");
+        iAppend("private final ");
+        fragmentWriter.writeDeclareBufferFragment(this, "buffers", config.methodsToAdapt().size());
+        newLine();
     }
 
     private void writeConfigureMethod() throws IOException {
@@ -87,6 +77,7 @@ public class ChannelStreamPerMethodSenderAdapterWriter extends AdapterCodeWriter
             iAppendLine("offeringStrategy = config.getOfferingStrategy();");
             iAppend("final String[] methods = new String[]{");
             long lastMethodIx = config.methodsToAdapt().size() - 1;
+
             for (var method : config.methodsToAdapt()){
                 append("\"").append(method.getPropName()).append("\"");
 
@@ -95,12 +86,14 @@ public class ChannelStreamPerMethodSenderAdapterWriter extends AdapterCodeWriter
             }
             append("};");
             newLine();
+            fragmentWriter.writePublicationCreatorFragment(this, "publicationCreator");
+            newLine();
+            fragmentWriter.writeBufferCreatorFragment(this, "bufferCreator", config.methodsToAdapt());
+            newLine();
             append("""
                     for(int i = 0; i < publications.length; i++){
-                        publications[i] = ctx.getAeron().addExclusivePublication(
-                            ctx.getProperty(senderName, methods[i], "channel"),
-                            ctx.getIntProperty(senderName, methods[i], "stream")
-                        );
+                        publications[i] = publicationCreator.createPublication(methods[i]);
+                        buffers[i] = bufferCreator.getBufferHolder(methods[i], i);
                     }
             """);
         endBlock();
@@ -127,7 +120,8 @@ public class ChannelStreamPerMethodSenderAdapterWriter extends AdapterCodeWriter
 
     private void writeMethodBody(AdaptableMethod method, int methodIx) throws Exception {
         String methodIxStr = String.valueOf(methodIx);
-        iAppend("MutableDirectBuffer buffer = buffers[").append(methodIxStr).append("];");
+        iAppend("MutableDirectBuffer buffer = ");
+        fragmentWriter.writeAcquireBufferFragment(this, "buffers", methodIxStr);
         newLine();
         StringBuilder paramListLenStr = new StringBuilder("0");
         method.forEachParam((param, ix) -> {
@@ -152,7 +146,10 @@ public class ChannelStreamPerMethodSenderAdapterWriter extends AdapterCodeWriter
                 paramListLenStr.append(param.getLengthStr());
 
         });
-        iAppend("offeringStrategy.offerMessage(publications[").append(methodIxStr).append("], buffer, 0, ").append(paramListLenStr).append(");");
+        iAppend("offeringStrategy.offerMessage(publications[").append(methodIxStr).append("], buffer, 0, ").append(paramListLenStr).append(", ");
+        fragmentWriter.writeReleaseBufferFragment(this, "buffers", methodIxStr, "buffer");
+        append(");");
+        newLine();
 
         switch (method.getReturnType()){
             case BYTE:
