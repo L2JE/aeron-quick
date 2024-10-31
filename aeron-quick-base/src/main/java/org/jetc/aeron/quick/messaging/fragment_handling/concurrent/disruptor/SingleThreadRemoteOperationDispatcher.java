@@ -4,7 +4,7 @@ import com.lmax.disruptor.RingBuffer;
 import io.aeron.logbuffer.FragmentHandler;
 import io.aeron.logbuffer.Header;
 import org.agrona.DirectBuffer;
-import org.jetc.aeron.quick.deferred_exec.ExecutionRequestEvent;
+import org.jetc.aeron.quick.utils.events.ExecutionRequestEvent;
 import org.jetc.aeron.quick.messaging.fragment_handling.concurrent.BufferDataExtractor;
 
 public class SingleThreadRemoteOperationDispatcher<T> implements FragmentHandler {

@@ -1,4 +1,4 @@
-package org.jetc.aeron.quick.deferred_exec;
+package org.jetc.aeron.quick.utils.events;
 
 /**
  * @param <T> the target class where a method will be run with the given parameters

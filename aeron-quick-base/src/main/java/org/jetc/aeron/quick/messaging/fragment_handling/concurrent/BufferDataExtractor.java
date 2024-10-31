@@ -2,7 +2,7 @@ package org.jetc.aeron.quick.messaging.fragment_handling.concurrent;
 
 import com.lmax.disruptor.EventTranslatorThreeArg;
 import org.agrona.DirectBuffer;
-import org.jetc.aeron.quick.deferred_exec.ExecutionRequestEvent;
+import org.jetc.aeron.quick.utils.events.ExecutionRequestEvent;
 
 /**
  * Extracts the data from the received buffer and inserts it in the given {@link ExecutionRequestEvent}

@@ -1,7 +1,7 @@
 package org.jetc.aeron.quick.messaging.publication;
 
 import io.aeron.Publication;
-import org.jetc.aeron.quick.exception.PublicationOfferFailedException;
+import org.jetc.aeron.quick.messaging.publication.exception.PublicationOfferFailedException;
 import org.jetc.aeron.quick.peers.sender.SenderConfiguration;
 import org.slf4j.Logger;
 import java.util.function.Consumer;

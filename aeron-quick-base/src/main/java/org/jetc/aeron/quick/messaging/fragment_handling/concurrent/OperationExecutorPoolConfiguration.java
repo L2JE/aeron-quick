@@ -2,7 +2,7 @@ package org.jetc.aeron.quick.messaging.fragment_handling.concurrent;
 
 import com.lmax.disruptor.EventHandler;
 import org.jetc.aeron.quick.AeronQuickContext;
-import org.jetc.aeron.quick.deferred_exec.ExecutionRequestEvent;
+import org.jetc.aeron.quick.utils.events.ExecutionRequestEvent;
 import org.jetc.aeron.quick.messaging.AeronConcurrentBinding;
 import org.jetc.aeron.quick.messaging.BindingAppender;
 import org.jetc.aeron.quick.messaging.fragment_handling.concurrent.disruptor.DisruptorExecutorPoolFactory;

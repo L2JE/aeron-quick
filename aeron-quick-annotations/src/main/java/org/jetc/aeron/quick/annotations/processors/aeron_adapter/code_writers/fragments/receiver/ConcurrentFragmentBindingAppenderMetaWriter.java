@@ -11,7 +11,7 @@ public class ConcurrentFragmentBindingAppenderMetaWriter implements ReceiverFrag
     @Override
     public void writeImports(AdapterCodeWriter writer) throws IOException {
         writer.iAppendLine("import org.jetc.aeron.quick.messaging.subscription.ConcurrentSubscriptionMeta;");
-        writer.iAppendLine("import org.jetc.aeron.quick.deferred_exec.MethodExecutor;");
+        writer.iAppendLine("import org.jetc.aeron.quick.utils.events.MethodExecutor;");
     }
 
     @Override

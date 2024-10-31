@@ -1,4 +1,4 @@
-package org.jetc.aeron.quick.deferred_exec;
+package org.jetc.aeron.quick.utils.events;
 
 /**
  * An event requiring to run a method on a target class

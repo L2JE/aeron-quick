@@ -5,7 +5,7 @@ import org.agrona.concurrent.SigInt;
 import org.agrona.concurrent.SleepingMillisIdleStrategy;
 import org.jetc.aeron.quick.AeronQuickFactory;
 import org.jetc.aeron.quick.annotations.AeronQuickSender;
-import org.jetc.aeron.quick.exception.PublicationOfferFailedException;
+import org.jetc.aeron.quick.messaging.publication.exception.PublicationOfferFailedException;
 import org.jetc.aeron.quick.messaging.publication.OfferingResultSideActions;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

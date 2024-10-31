@@ -123,7 +123,7 @@ class AeronQuickReceiverProcessorTest extends JavacTest {
                 import org.jetc.aeron.quick.messaging.serialization.ObjectStringMapper;
                 import java.nio.ByteOrder;
                 import org.jetc.aeron.quick.messaging.subscription.ConcurrentSubscriptionMeta;
-                import org.jetc.aeron.quick.deferred_exec.MethodExecutor;
+                import org.jetc.aeron.quick.utils.events.MethodExecutor;
                         
                 public class AeronQuickGeneralServiceServer_RAdapter extends org.jetc.aeron.quick.peers.receiver.ConcurrentAdapter<AeronQuickGeneralServiceServer>{
                     @Override

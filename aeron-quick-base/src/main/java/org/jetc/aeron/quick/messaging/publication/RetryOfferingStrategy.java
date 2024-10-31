@@ -3,7 +3,7 @@ package org.jetc.aeron.quick.messaging.publication;
 import io.aeron.Publication;
 import org.agrona.MutableDirectBuffer;
 import org.agrona.concurrent.IdleStrategy;
-import org.jetc.aeron.quick.exception.PublicationOfferFailedException;
+import org.jetc.aeron.quick.messaging.publication.exception.PublicationOfferFailedException;
 import java.util.function.Consumer;
 
 public class RetryOfferingStrategy implements PublicationOfferingStrategy{
