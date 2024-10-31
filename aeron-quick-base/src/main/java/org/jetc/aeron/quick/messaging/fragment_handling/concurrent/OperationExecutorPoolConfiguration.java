@@ -16,7 +16,7 @@ import java.util.concurrent.ThreadFactory;
  */
 public class OperationExecutorPoolConfiguration<T> implements BindingAppender<ConcurrentSubscriptionMeta<T>> {
     protected PoolWaitStrategy idleStrategy;
-    protected long idleTimeMillis;
+    protected long idleTimeNanos;
     protected int poolSize;
     protected ThreadFactory threadFactory;
     protected int queueSize;
@@ -27,7 +27,7 @@ public class OperationExecutorPoolConfiguration<T> implements BindingAppender<Co
     public OperationExecutorPoolConfiguration(AeronQuickContext context, String componentName){
         String POOL_PROPS_BASE = "events.pool";
         idleStrategy = PoolWaitStrategy.fromProp(context.getProperty(componentName, POOL_PROPS_BASE, "idleStrategy"), PoolWaitStrategy.SLEEP);
-        idleTimeMillis = context.getIntProperty(componentName, POOL_PROPS_BASE, "idleTimeMillis", 1);
+        idleTimeNanos = context.getIntProperty(componentName, POOL_PROPS_BASE, "idleTimeMillis", 100);
         poolSize = context.getIntProperty(componentName, POOL_PROPS_BASE, "poolSize", 1);
         threadFactory = ThreadFactoryOpts.fromProp(context.getProperty(componentName, POOL_PROPS_BASE, "threadFactory"), ThreadFactoryOpts.VIRTUAL);
         queueSize = context.getIntProperty(componentName, POOL_PROPS_BASE, "queueSize", 2048);
@@ -45,10 +45,10 @@ public class OperationExecutorPoolConfiguration<T> implements BindingAppender<Co
         return idleStrategy;
     }
 
-    public long getIdleTimeMillis() {
-        if(idleTimeMillis < 0)
-            idleTimeMillis = 1;
-        return idleTimeMillis;
+    public long getIdleTimeNanos() {
+        if(idleTimeNanos < 0)
+            idleTimeNanos = 1;
+        return idleTimeNanos;
     }
 
     public int getPoolSize() {
@@ -91,8 +91,8 @@ public class OperationExecutorPoolConfiguration<T> implements BindingAppender<Co
         return this;
     }
 
-    public OperationExecutorPoolConfiguration<T> setIdleTimeMillis(long idleTimeMillis) {
-        this.idleTimeMillis = idleTimeMillis;
+    public OperationExecutorPoolConfiguration<T> setIdleTimeNanos(long idleTimeNanos) {
+        this.idleTimeNanos = idleTimeNanos;
         return this;
     }
 

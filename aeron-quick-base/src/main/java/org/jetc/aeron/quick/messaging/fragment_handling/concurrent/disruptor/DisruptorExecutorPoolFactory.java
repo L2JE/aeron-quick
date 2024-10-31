@@ -14,7 +14,7 @@ public class DisruptorExecutorPoolFactory<T> implements OperationExecutorPoolFac
         WaitStrategy waitStrategy = switch (config.getIdleStrategy()){
             case BUSY_SPIN -> new BusySpinWaitStrategy();
             case YIELD -> new YieldingWaitStrategy();
-            case SLEEP -> new SleepingWaitStrategy(200, config.getIdleTimeMillis() > 0 ? config.getIdleTimeMillis() * 1000 : 100);
+            case SLEEP -> new SleepingWaitStrategy(200, config.getIdleTimeNanos() > 0 ? config.getIdleTimeNanos() : 100);
         };
 
         return new DisruptorExecutorPool<>(config.getParamsExtractors(), config.getGlobalEventHandler(), config.getQueueSize(), config.getThreadFactory(), waitStrategy, config.getPoolSize());
