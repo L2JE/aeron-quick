@@ -54,43 +54,97 @@ class AeronQuickReceiverProcessorTest extends JavacTest {
         CompilationSubject.assertThat(compilation).succeeded();
         CompilationSubject.assertThat(compilation).generatedFile(StandardLocation.SOURCE_OUTPUT,"org/jetc/aeron/quick/samples/general/"+targetClassName+RECEIVER_SUFFIX+".java");
         CompilationSubject.assertThat(compilation).generatedFile(StandardLocation.CLASS_OUTPUT,"org/jetc/aeron/quick/samples/general/"+targetClassName+RECEIVER_SUFFIX+".class");
-        assertFileContentEquals(compilation, RECEIVER_SUFFIX+".java", """
+        assertFileContentEquals(compilation, RECEIVER_SUFFIX + ".java", """
                 package org.jetc.aeron.quick.samples.general;
-                import org.jetc.aeron.quick.AeronQuickContext;
-                import org.jetc.aeron.quick.messaging.serialization.ObjectStringMapper;
-                import org.jetc.aeron.quick.messaging.subscription.SubscriptionMeta;
-                import org.jetc.aeron.quick.peers.receiver.ReceiverBinding;
-                import org.jetc.aeron.quick.peers.receiver.ReceiverConfiguration;
-                import org.slf4j.Logger;
-                import org.slf4j.LoggerFactory;
-                import java.nio.ByteOrder;
-                import java.util.List;
                 import org.agrona.BitUtil;
+                import org.jetc.aeron.quick.AeronQuickContext;
+                import org.jetc.aeron.quick.messaging.BindingAppender;
+                import org.jetc.aeron.quick.messaging.serialization.ObjectStringMapper;
+                import java.nio.ByteOrder;
+                import org.jetc.aeron.quick.messaging.subscription.SubscriptionMeta;
                         
-                public class AeronQuickGeneralServiceServer_RAdapter implements org.jetc.aeron.quick.peers.receiver.ReceiverAdapter<AeronQuickGeneralServiceServer>{
-                    private static final Logger log = LoggerFactory.getLogger(AeronQuickGeneralServiceServer_RAdapter.class);
+                public class AeronQuickGeneralServiceServer_RAdapter extends org.jetc.aeron.quick.peers.receiver.SequentialAdapter<AeronQuickGeneralServiceServer>{                    
                     @Override
-                    public void configure(ReceiverConfiguration<AeronQuickGeneralServiceServer> config){
-                        final AeronQuickContext ctx = config.getContext();
-                        final ObjectStringMapper mapper = ctx.getObjectMapper();
-                        final String receiverName = config.getComponentName();
-                        final AeronQuickGeneralServiceServer server = config.getEndpoint();
-                        List<ReceiverBinding> bindings = List.of(
-                            new ReceiverBinding(
-                                "notifyOperationDone",
-                                aeron -> (buffer, offset, length, header) -> {
+                    protected void registerBindings(BindingAppender<SubscriptionMeta> bindings, AeronQuickContext ctx, ObjectStringMapper mapper, String receiverName, AeronQuickGeneralServiceServer server) {
+                    
+                        bindings.addBinding(
+                            ctx.getProperty(receiverName, "notifyOperationDone", "channel"),
+                            ctx.getIntProperty(receiverName, "notifyOperationDone", "stream"),
+                            new SubscriptionMeta(
+                                (buffer, offset, length, header) -> {
                                     char param0 = buffer.getChar(offset, ByteOrder.LITTLE_ENDIAN);
                                     int param1 = buffer.getInt(offset + BitUtil.SIZE_OF_CHAR, ByteOrder.LITTLE_ENDIAN);
                                     server.notifyOperationDone(param0, param1);
-                                }
+                                }, 3
                             )
                         );
-                        for (var b : bindings){
-                            config.addBinding(
-                                ctx.getProperty(receiverName, b.method() ,"channel"),
-                                ctx.getIntProperty(receiverName, b.method(), "stream"),
-                                new SubscriptionMeta(b.handler(), 3)
-                            );
+                    }
+                }""");
+    }
+
+    @Test
+    void generates_adapter_primitive_params_only_adapt_only_method_marked_with_QuickContractMethod_concurrent() {
+        String targetClassName = "AeronQuickGeneralServiceServer";
+        Compilation compilation = withAeronQuickInDefaultClasspath(Compiler.javac())
+                .withProcessors(new AeronQuickReceiverProcessor())
+                .compile(
+                        JavaFileObjects.forSourceString("org.jetc.aeron.quick.samples.general.AeronQuickGeneralServiceServer", """
+                                        package org.jetc.aeron.quick.samples.general;
+                                        import java.lang.annotation.ElementType;
+                                        import java.lang.annotation.Retention;
+                                        import java.lang.annotation.RetentionPolicy;
+                                        import java.lang.annotation.Target;
+                                        import org.jetc.aeron.quick.annotations.AeronQuickReceiver;
+                                        import org.jetc.aeron.quick.annotations.AeronQuickContractEndpoint;
+                                                        
+                                        @AeronQuickReceiver(concurrent = true)
+                                        class AeronQuickGeneralServiceServer implements AeronGeneralServiceContract {
+                                            @Override
+                                            public void notifyOperationDone(char extraData, int param2){}
+                                            @Override
+                                            public long nonAdaptedMethod(){return 0;}
+                                        }
+                                        interface AeronGeneralServiceContract {
+                                            @AeronQuickContractEndpoint
+                                            void notifyOperationDone(char extraData, int param2);
+                                            long nonAdaptedMethod();
+                                        }
+                                """)
+                );
+
+        CompilationSubject.assertThat(compilation).succeeded();
+        CompilationSubject.assertThat(compilation).generatedFile(StandardLocation.SOURCE_OUTPUT, "org/jetc/aeron/quick/samples/general/" + targetClassName + RECEIVER_SUFFIX + ".java");
+        CompilationSubject.assertThat(compilation).generatedFile(StandardLocation.CLASS_OUTPUT, "org/jetc/aeron/quick/samples/general/" + targetClassName + RECEIVER_SUFFIX + ".class");
+        assertFileContentEquals(compilation, RECEIVER_SUFFIX + ".java", """
+                package org.jetc.aeron.quick.samples.general;
+                import org.agrona.BitUtil;
+                import org.jetc.aeron.quick.AeronQuickContext;
+                import org.jetc.aeron.quick.messaging.BindingAppender;
+                import org.jetc.aeron.quick.messaging.serialization.ObjectStringMapper;
+                import java.nio.ByteOrder;
+                import org.jetc.aeron.quick.messaging.subscription.ConcurrentSubscriptionMeta;
+                import org.jetc.aeron.quick.deferred_exec.MethodExecutor;
+                        
+                public class AeronQuickGeneralServiceServer_RAdapter extends org.jetc.aeron.quick.peers.receiver.ConcurrentAdapter<AeronQuickGeneralServiceServer>{
+                    @Override
+                    protected void registerBindings(BindingAppender<ConcurrentSubscriptionMeta<AeronQuickGeneralServiceServer>> bindings, AeronQuickContext ctx, ObjectStringMapper mapper, String receiverName, AeronQuickGeneralServiceServer server) {
+                    
+                        bindings.addBinding(
+                            ctx.getProperty(receiverName, "notifyOperationDone", "channel"),
+                            ctx.getIntProperty(receiverName, "notifyOperationDone", "stream"),
+                            new ConcurrentSubscriptionMeta<>(
+                                (event, sequence, buffer, offset, length) -> {
+                                    char param0 = buffer.getChar(offset, ByteOrder.LITTLE_ENDIAN);
+                                    int param1 = buffer.getInt(offset + BitUtil.SIZE_OF_CHAR, ByteOrder.LITTLE_ENDIAN);
+                                    event.setExecutor(new MethodExecutor0(param0, param1));
+                                }, 3
+                            )
+                        );
+                    }
+                    public record MethodExecutor0(char param0, int param1) implements MethodExecutor<AeronQuickGeneralServiceServer>{
+                        @Override
+                        public void runMethod(AeronQuickGeneralServiceServer target) {
+                            target.notifyOperationDone(param0, param1);
                         }
                     }
                 }""");
@@ -131,48 +185,37 @@ class AeronQuickReceiverProcessorTest extends JavacTest {
         CompilationSubject.assertThat(compilation).generatedFile(StandardLocation.CLASS_OUTPUT,"org/jetc/aeron/quick/samples/general/"+targetClassName+RECEIVER_SUFFIX+".class");
         assertFileContentEquals(compilation, RECEIVER_SUFFIX+".java", """
                 package org.jetc.aeron.quick.samples.general;
-                import org.jetc.aeron.quick.AeronQuickContext;
-                import org.jetc.aeron.quick.messaging.serialization.ObjectStringMapper;
-                import org.jetc.aeron.quick.messaging.subscription.SubscriptionMeta;
-                import org.jetc.aeron.quick.peers.receiver.ReceiverBinding;
-                import org.jetc.aeron.quick.peers.receiver.ReceiverConfiguration;
-                import org.slf4j.Logger;
-                import org.slf4j.LoggerFactory;
-                import java.nio.ByteOrder;
-                import java.util.List;
                 import org.agrona.BitUtil;
-                        
-                public class AeronQuickGeneralServiceServer_RAdapter implements org.jetc.aeron.quick.peers.receiver.ReceiverAdapter<AeronQuickGeneralServiceServer>{
-                    private static final Logger log = LoggerFactory.getLogger(AeronQuickGeneralServiceServer_RAdapter.class);
+                import org.jetc.aeron.quick.AeronQuickContext;
+                import org.jetc.aeron.quick.messaging.BindingAppender;
+                import org.jetc.aeron.quick.messaging.serialization.ObjectStringMapper;
+                import java.nio.ByteOrder;
+                import org.jetc.aeron.quick.messaging.subscription.SubscriptionMeta;
+                                
+                public class AeronQuickGeneralServiceServer_RAdapter extends org.jetc.aeron.quick.peers.receiver.SequentialAdapter<AeronQuickGeneralServiceServer>{
                     @Override
-                    public void configure(ReceiverConfiguration<AeronQuickGeneralServiceServer> config){
-                        final AeronQuickContext ctx = config.getContext();
-                        final ObjectStringMapper mapper = ctx.getObjectMapper();
-                        final String receiverName = config.getComponentName();
-                        final AeronQuickGeneralServiceServer server = config.getEndpoint();
-                        List<ReceiverBinding> bindings = List.of(
-                            new ReceiverBinding(
-                                "notifyOperationDone",
-                                aeron -> (buffer, offset, length, header) -> {
+                    protected void registerBindings(BindingAppender<SubscriptionMeta> bindings, AeronQuickContext ctx, ObjectStringMapper mapper, String receiverName, AeronQuickGeneralServiceServer server) {
+                                
+                        bindings.addBinding(
+                            ctx.getProperty(receiverName, "notifyOperationDone", "channel"),
+                            ctx.getIntProperty(receiverName, "notifyOperationDone", "stream"),
+                            new SubscriptionMeta(
+                                (buffer, offset, length, header) -> {
                                     char param0 = buffer.getChar(offset, ByteOrder.LITTLE_ENDIAN);
                                     int param1 = buffer.getInt(offset + BitUtil.SIZE_OF_CHAR, ByteOrder.LITTLE_ENDIAN);
                                     server.notifyOperationDone(param0, param1);
-                                }
-                            ),
-                            new ReceiverBinding(
-                                "otherAdaptedMethod",
-                                aeron -> (buffer, offset, length, header) -> {
-                                    server.otherAdaptedMethod();
-                                }
+                                }, 3
                             )
                         );
-                        for (var b : bindings){
-                            config.addBinding(
-                                ctx.getProperty(receiverName, b.method() ,"channel"),
-                                ctx.getIntProperty(receiverName, b.method(), "stream"),
-                                new SubscriptionMeta(b.handler(), 3)
-                            );
-                        }
+                        bindings.addBinding(
+                            ctx.getProperty(receiverName, "otherAdaptedMethod", "channel"),
+                            ctx.getIntProperty(receiverName, "otherAdaptedMethod", "stream"),
+                            new SubscriptionMeta(
+                                (buffer, offset, length, header) -> {
+                                    server.otherAdaptedMethod();
+                                }, 3
+                            )
+                        );
                     }
                 }""");
     }
@@ -207,48 +250,37 @@ class AeronQuickReceiverProcessorTest extends JavacTest {
         assertFileContentEquals(compilation, RECEIVER_SUFFIX+".java",
         """
         package org.jetc.aeron.quick.samples.general;
-        import org.jetc.aeron.quick.AeronQuickContext;
-        import org.jetc.aeron.quick.messaging.serialization.ObjectStringMapper;
-        import org.jetc.aeron.quick.messaging.subscription.SubscriptionMeta;
-        import org.jetc.aeron.quick.peers.receiver.ReceiverBinding;
-        import org.jetc.aeron.quick.peers.receiver.ReceiverConfiguration;
-        import org.slf4j.Logger;
-        import org.slf4j.LoggerFactory;
-        import java.nio.ByteOrder;
-        import java.util.List;
         import org.agrona.BitUtil;
+        import org.jetc.aeron.quick.AeronQuickContext;
+        import org.jetc.aeron.quick.messaging.BindingAppender;
+        import org.jetc.aeron.quick.messaging.serialization.ObjectStringMapper;
+        import java.nio.ByteOrder;
+        import org.jetc.aeron.quick.messaging.subscription.SubscriptionMeta;
                 
-        public class AeronQuickGeneralServiceServer_RAdapter implements org.jetc.aeron.quick.peers.receiver.ReceiverAdapter<AeronQuickGeneralServiceServer>{
-            private static final Logger log = LoggerFactory.getLogger(AeronQuickGeneralServiceServer_RAdapter.class);
+        public class AeronQuickGeneralServiceServer_RAdapter extends org.jetc.aeron.quick.peers.receiver.SequentialAdapter<AeronQuickGeneralServiceServer>{
             @Override
-            public void configure(ReceiverConfiguration<AeronQuickGeneralServiceServer> config){
-                final AeronQuickContext ctx = config.getContext();
-                final ObjectStringMapper mapper = ctx.getObjectMapper();
-                final String receiverName = config.getComponentName();
-                final AeronQuickGeneralServiceServer server = config.getEndpoint();
-                List<ReceiverBinding> bindings = List.of(
-                    new ReceiverBinding(
-                        "notifyOperationDone",
-                        aeron -> (buffer, offset, length, header) -> {
+            protected void registerBindings(BindingAppender<SubscriptionMeta> bindings, AeronQuickContext ctx, ObjectStringMapper mapper, String receiverName, AeronQuickGeneralServiceServer server) {
+                
+                bindings.addBinding(
+                    ctx.getProperty(receiverName, "notifyOperationDone", "channel"),
+                    ctx.getIntProperty(receiverName, "notifyOperationDone", "stream"),
+                    new SubscriptionMeta(
+                        (buffer, offset, length, header) -> {
                             char param0 = buffer.getChar(offset, ByteOrder.LITTLE_ENDIAN);
                             int param1 = buffer.getInt(offset + BitUtil.SIZE_OF_CHAR, ByteOrder.LITTLE_ENDIAN);
                             server.notifyOperationDone(param0, param1);
-                        }
-                    ),
-                    new ReceiverBinding(
-                        "otherAdaptedMethod",
-                        aeron -> (buffer, offset, length, header) -> {
-                            server.otherAdaptedMethod();
-                        }
+                        }, 3
                     )
                 );
-                for (var b : bindings){
-                    config.addBinding(
-                        ctx.getProperty(receiverName, b.method() ,"channel"),
-                        ctx.getIntProperty(receiverName, b.method(), "stream"),
-                        new SubscriptionMeta(b.handler(), 3)
-                    );
-                }
+                bindings.addBinding(
+                    ctx.getProperty(receiverName, "otherAdaptedMethod", "channel"),
+                    ctx.getIntProperty(receiverName, "otherAdaptedMethod", "stream"),
+                    new SubscriptionMeta(
+                        (buffer, offset, length, header) -> {
+                            server.otherAdaptedMethod();
+                        }, 3
+                    )
+                );
             }
         }"""
         );
@@ -282,42 +314,28 @@ class AeronQuickReceiverProcessorTest extends JavacTest {
         CompilationSubject.assertThat(compilation).generatedFile(StandardLocation.CLASS_OUTPUT,"org/jetc/aeron/quick/samples/general/"+targetClassName+RECEIVER_SUFFIX+".class");
         assertFileContentEquals(compilation, RECEIVER_SUFFIX+".java", """
                 package org.jetc.aeron.quick.samples.general;
-                import org.jetc.aeron.quick.AeronQuickContext;
-                import org.jetc.aeron.quick.messaging.serialization.ObjectStringMapper;
-                import org.jetc.aeron.quick.messaging.subscription.SubscriptionMeta;
-                import org.jetc.aeron.quick.peers.receiver.ReceiverBinding;
-                import org.jetc.aeron.quick.peers.receiver.ReceiverConfiguration;
-                import org.slf4j.Logger;
-                import org.slf4j.LoggerFactory;
-                import java.nio.ByteOrder;
-                import java.util.List;
                 import org.agrona.BitUtil;
-                        
-                public class AeronQuickGeneralServiceServer_RAdapter implements org.jetc.aeron.quick.peers.receiver.ReceiverAdapter<AeronQuickGeneralServiceServer>{
-                    private static final Logger log = LoggerFactory.getLogger(AeronQuickGeneralServiceServer_RAdapter.class);
+                import org.jetc.aeron.quick.AeronQuickContext;
+                import org.jetc.aeron.quick.messaging.BindingAppender;
+                import org.jetc.aeron.quick.messaging.serialization.ObjectStringMapper;
+                import java.nio.ByteOrder;
+                import org.jetc.aeron.quick.messaging.subscription.SubscriptionMeta;
+                                
+                public class AeronQuickGeneralServiceServer_RAdapter extends org.jetc.aeron.quick.peers.receiver.SequentialAdapter<AeronQuickGeneralServiceServer>{
                     @Override
-                    public void configure(ReceiverConfiguration<AeronQuickGeneralServiceServer> config){
-                        final AeronQuickContext ctx = config.getContext();
-                        final ObjectStringMapper mapper = ctx.getObjectMapper();
-                        final String receiverName = config.getComponentName();
-                        final AeronQuickGeneralServiceServer server = config.getEndpoint();
-                        List<ReceiverBinding> bindings = List.of(
-                            new ReceiverBinding(
-                                "methodWStringParam",
-                                aeron -> (buffer, offset, length, header) -> {
+                    protected void registerBindings(BindingAppender<SubscriptionMeta> bindings, AeronQuickContext ctx, ObjectStringMapper mapper, String receiverName, AeronQuickGeneralServiceServer server) {
+                                
+                        bindings.addBinding(
+                            ctx.getProperty(receiverName, "methodWStringParam", "channel"),
+                            ctx.getIntProperty(receiverName, "methodWStringParam", "stream"),
+                            new SubscriptionMeta(
+                                (buffer, offset, length, header) -> {
                                     java.lang.String param0 = buffer.getStringUtf8(offset, ByteOrder.LITTLE_ENDIAN);
                                     int param1 = buffer.getInt(offset + param0.length() + BitUtil.SIZE_OF_INT, ByteOrder.LITTLE_ENDIAN);
                                     server.methodWStringParam(param0, param1);
-                                }
+                                }, 3
                             )
                         );
-                        for (var b : bindings){
-                            config.addBinding(
-                                ctx.getProperty(receiverName, b.method() ,"channel"),
-                                ctx.getIntProperty(receiverName, b.method(), "stream"),
-                                new SubscriptionMeta(b.handler(), 3)
-                            );
-                        }
                     }
                 }""");
     }
@@ -351,42 +369,28 @@ class AeronQuickReceiverProcessorTest extends JavacTest {
         CompilationSubject.assertThat(compilation).generatedFile(StandardLocation.CLASS_OUTPUT,"org/jetc/aeron/quick/samples/general/"+targetClassName+RECEIVER_SUFFIX+".class");
         assertFileContentEquals(compilation, RECEIVER_SUFFIX+".java", """
                 package org.jetc.aeron.quick.samples.general;
-                import org.jetc.aeron.quick.AeronQuickContext;
-                import org.jetc.aeron.quick.messaging.serialization.ObjectStringMapper;
-                import org.jetc.aeron.quick.messaging.subscription.SubscriptionMeta;
-                import org.jetc.aeron.quick.peers.receiver.ReceiverBinding;
-                import org.jetc.aeron.quick.peers.receiver.ReceiverConfiguration;
-                import org.slf4j.Logger;
-                import org.slf4j.LoggerFactory;
-                import java.nio.ByteOrder;
-                import java.util.List;
                 import org.agrona.BitUtil;
-                        
-                public class AeronQuickGeneralServiceServer_RAdapter implements org.jetc.aeron.quick.peers.receiver.ReceiverAdapter<AeronQuickGeneralServiceServer>{
-                    private static final Logger log = LoggerFactory.getLogger(AeronQuickGeneralServiceServer_RAdapter.class);
+                import org.jetc.aeron.quick.AeronQuickContext;
+                import org.jetc.aeron.quick.messaging.BindingAppender;
+                import org.jetc.aeron.quick.messaging.serialization.ObjectStringMapper;
+                import java.nio.ByteOrder;
+                import org.jetc.aeron.quick.messaging.subscription.SubscriptionMeta;
+                                
+                public class AeronQuickGeneralServiceServer_RAdapter extends org.jetc.aeron.quick.peers.receiver.SequentialAdapter<AeronQuickGeneralServiceServer>{
                     @Override
-                    public void configure(ReceiverConfiguration<AeronQuickGeneralServiceServer> config){
-                        final AeronQuickContext ctx = config.getContext();
-                        final ObjectStringMapper mapper = ctx.getObjectMapper();
-                        final String receiverName = config.getComponentName();
-                        final AeronQuickGeneralServiceServer server = config.getEndpoint();
-                        List<ReceiverBinding> bindings = List.of(
-                            new ReceiverBinding(
-                                "notifyOperationDone",
-                                aeron -> (buffer, offset, length, header) -> {
+                    protected void registerBindings(BindingAppender<SubscriptionMeta> bindings, AeronQuickContext ctx, ObjectStringMapper mapper, String receiverName, AeronQuickGeneralServiceServer server) {
+                                
+                        bindings.addBinding(
+                            ctx.getProperty(receiverName, "notifyOperationDone", "channel"),
+                            ctx.getIntProperty(receiverName, "notifyOperationDone", "stream"),
+                            new SubscriptionMeta(
+                                (buffer, offset, length, header) -> {
                                     char param0 = buffer.getChar(offset, ByteOrder.LITTLE_ENDIAN);
                                     int param1 = buffer.getInt(offset + BitUtil.SIZE_OF_CHAR, ByteOrder.LITTLE_ENDIAN);
                                     server.notifyOperationDone(param0, param1);
-                                }
+                                }, 3
                             )
                         );
-                        for (var b : bindings){
-                            config.addBinding(
-                                ctx.getProperty(receiverName, b.method() ,"channel"),
-                                ctx.getIntProperty(receiverName, b.method(), "stream"),
-                                new SubscriptionMeta(b.handler(), 3)
-                            );
-                        }
                     }
                 }""");
     }
@@ -421,112 +425,30 @@ class AeronQuickReceiverProcessorTest extends JavacTest {
         CompilationSubject.assertThat(compilation).generatedFile(StandardLocation.CLASS_OUTPUT,"org/jetc/aeron/quick/samples/general/"+targetClassName+RECEIVER_SUFFIX+".class");
         assertFileContentEquals(compilation, RECEIVER_SUFFIX+".java", """
                 package org.jetc.aeron.quick.samples.general;
-                import org.jetc.aeron.quick.AeronQuickContext;
-                import org.jetc.aeron.quick.messaging.serialization.ObjectStringMapper;
-                import org.jetc.aeron.quick.messaging.subscription.SubscriptionMeta;
-                import org.jetc.aeron.quick.peers.receiver.ReceiverBinding;
-                import org.jetc.aeron.quick.peers.receiver.ReceiverConfiguration;
-                import org.slf4j.Logger;
-                import org.slf4j.LoggerFactory;
-                import java.nio.ByteOrder;
-                import java.util.List;
                 import org.agrona.BitUtil;
-                        
-                public class AeronQuickGeneralServiceServer_RAdapter implements org.jetc.aeron.quick.peers.receiver.ReceiverAdapter<AeronQuickGeneralServiceServer>{
-                    private static final Logger log = LoggerFactory.getLogger(AeronQuickGeneralServiceServer_RAdapter.class);
+                import org.jetc.aeron.quick.AeronQuickContext;
+                import org.jetc.aeron.quick.messaging.BindingAppender;
+                import org.jetc.aeron.quick.messaging.serialization.ObjectStringMapper;
+                import java.nio.ByteOrder;
+                import org.jetc.aeron.quick.messaging.subscription.SubscriptionMeta;
+                                
+                public class AeronQuickGeneralServiceServer_RAdapter extends org.jetc.aeron.quick.peers.receiver.SequentialAdapter<AeronQuickGeneralServiceServer>{
                     @Override
-                    public void configure(ReceiverConfiguration<AeronQuickGeneralServiceServer> config){
-                        final AeronQuickContext ctx = config.getContext();
-                        final ObjectStringMapper mapper = ctx.getObjectMapper();
-                        final String receiverName = config.getComponentName();
-                        final AeronQuickGeneralServiceServer server = config.getEndpoint();
-                        List<ReceiverBinding> bindings = List.of(
-                            new ReceiverBinding(
-                                "notifyOperationDone",
-                                aeron -> (buffer, offset, length, header) -> {
+                    protected void registerBindings(BindingAppender<SubscriptionMeta> bindings, AeronQuickContext ctx, ObjectStringMapper mapper, String receiverName, AeronQuickGeneralServiceServer server) {
+                                
+                        bindings.addBinding(
+                            ctx.getProperty(receiverName, "notifyOperationDone", "channel"),
+                            ctx.getIntProperty(receiverName, "notifyOperationDone", "stream"),
+                            new SubscriptionMeta(
+                                (buffer, offset, length, header) -> {
                                     char param0 = buffer.getChar(offset, ByteOrder.LITTLE_ENDIAN);
                                     java.lang.String param1_str = buffer.getStringUtf8(offset + BitUtil.SIZE_OF_CHAR, ByteOrder.LITTLE_ENDIAN);
                                     org.jetc.aeron.quick.samples.general.POJOExample param1 = mapper.deserialize(param1_str, org.jetc.aeron.quick.samples.general.POJOExample.class);
                                     int param2 = buffer.getInt(offset + BitUtil.SIZE_OF_CHAR + param1_str.length() + BitUtil.SIZE_OF_INT, ByteOrder.LITTLE_ENDIAN);
                                     server.notifyOperationDone(param0, param1, param2);
-                                }
+                                }, 3
                             )
                         );
-                        for (var b : bindings){
-                            config.addBinding(
-                                ctx.getProperty(receiverName, b.method() ,"channel"),
-                                ctx.getIntProperty(receiverName, b.method(), "stream"),
-                                new SubscriptionMeta(b.handler(), 3)
-                            );
-                        }
-                    }
-                }""");
-    }
-
-    @Test
-    void generates_adapter_on_method_compatible_with_contextual_fragment_handler() throws IOException {//TODO
-        String targetClassName = "AeronQuickGeneralServiceServer";
-        Compilation compilation = withAeronQuickInDefaultClasspath(Compiler.javac())
-                .withProcessors(new AeronQuickReceiverProcessor())
-                .compile(
-                        JavaFileObjects.forSourceString("org.jetc.aeron.quick.samples.general.AeronQuickGeneralServiceServer", """
-                                package org.jetc.aeron.quick.samples.general;
-                                import java.lang.annotation.ElementType;
-                                import java.lang.annotation.Retention;
-                                import java.lang.annotation.RetentionPolicy;
-                                import java.lang.annotation.Target;
-                                import org.jetc.aeron.quick.annotations.AeronQuickReceiver;
-                                import org.jetc.aeron.quick.annotations.AeronQuickContractEndpoint;
-                                import io.aeron.Aeron;
-                                import io.aeron.logbuffer.FragmentHandler;
-                        
-                                @AeronQuickReceiver
-                                class AeronQuickGeneralServiceServer {
-                                    @AeronQuickContractEndpoint
-                                    public FragmentHandler contextualFragmentHandlerCompatible(Aeron aeronArg){
-                                        return (var1, var2, var3, var4) -> {};
-                                    }
-                                }
-                        """)
-                );
-
-        CompilationSubject.assertThat(compilation).succeeded();
-        CompilationSubject.assertThat(compilation).generatedFile(StandardLocation.SOURCE_OUTPUT,"org/jetc/aeron/quick/samples/general/"+targetClassName+RECEIVER_SUFFIX+".java");
-        CompilationSubject.assertThat(compilation).generatedFile(StandardLocation.CLASS_OUTPUT,"org/jetc/aeron/quick/samples/general/"+targetClassName+RECEIVER_SUFFIX+".class");
-        assertFileContentEquals(compilation, RECEIVER_SUFFIX+".java", """
-                package org.jetc.aeron.quick.samples.general;
-                import org.jetc.aeron.quick.AeronQuickContext;
-                import org.jetc.aeron.quick.messaging.serialization.ObjectStringMapper;
-                import org.jetc.aeron.quick.messaging.subscription.SubscriptionMeta;
-                import org.jetc.aeron.quick.peers.receiver.ReceiverBinding;
-                import org.jetc.aeron.quick.peers.receiver.ReceiverConfiguration;
-                import org.slf4j.Logger;
-                import org.slf4j.LoggerFactory;
-                import java.nio.ByteOrder;
-                import java.util.List;
-                import org.agrona.BitUtil;
-                        
-                public class AeronQuickGeneralServiceServer_RAdapter implements org.jetc.aeron.quick.peers.receiver.ReceiverAdapter<AeronQuickGeneralServiceServer>{
-                    private static final Logger log = LoggerFactory.getLogger(AeronQuickGeneralServiceServer_RAdapter.class);
-                    @Override
-                    public void configure(ReceiverConfiguration<AeronQuickGeneralServiceServer> config){
-                        final AeronQuickContext ctx = config.getContext();
-                        final ObjectStringMapper mapper = ctx.getObjectMapper();
-                        final String receiverName = config.getComponentName();
-                        final AeronQuickGeneralServiceServer server = config.getEndpoint();
-                        List<ReceiverBinding> bindings = List.of(
-                            new ReceiverBinding(
-                                "contextualFragmentHandlerCompatible",
-                                server::contextualFragmentHandlerCompatible
-                            )
-                        );
-                        for (var b : bindings){
-                            config.addBinding(
-                                ctx.getProperty(receiverName, b.method() ,"channel"),
-                                ctx.getIntProperty(receiverName, b.method(), "stream"),
-                                new SubscriptionMeta(b.handler(), 3)
-                            );
-                        }
                     }
                 }""");
     }
@@ -561,38 +483,24 @@ class AeronQuickReceiverProcessorTest extends JavacTest {
         CompilationSubject.assertThat(compilation).generatedFile(StandardLocation.CLASS_OUTPUT,"org/jetc/aeron/quick/samples/general/"+targetClassName+RECEIVER_SUFFIX+".class");
         assertFileContentEquals(compilation, RECEIVER_SUFFIX+".java", """
                 package org.jetc.aeron.quick.samples.general;
-                import org.jetc.aeron.quick.AeronQuickContext;
-                import org.jetc.aeron.quick.messaging.serialization.ObjectStringMapper;
-                import org.jetc.aeron.quick.messaging.subscription.SubscriptionMeta;
-                import org.jetc.aeron.quick.peers.receiver.ReceiverBinding;
-                import org.jetc.aeron.quick.peers.receiver.ReceiverConfiguration;
-                import org.slf4j.Logger;
-                import org.slf4j.LoggerFactory;
-                import java.nio.ByteOrder;
-                import java.util.List;
                 import org.agrona.BitUtil;
-                        
-                public class AeronQuickGeneralServiceServer_RAdapter implements org.jetc.aeron.quick.peers.receiver.ReceiverAdapter<AeronQuickGeneralServiceServer>{
-                    private static final Logger log = LoggerFactory.getLogger(AeronQuickGeneralServiceServer_RAdapter.class);
+                import org.jetc.aeron.quick.AeronQuickContext;
+                import org.jetc.aeron.quick.messaging.BindingAppender;
+                import org.jetc.aeron.quick.messaging.serialization.ObjectStringMapper;
+                import java.nio.ByteOrder;
+                import org.jetc.aeron.quick.messaging.subscription.SubscriptionMeta;
+                                
+                public class AeronQuickGeneralServiceServer_RAdapter extends org.jetc.aeron.quick.peers.receiver.SequentialAdapter<AeronQuickGeneralServiceServer>{
                     @Override
-                    public void configure(ReceiverConfiguration<AeronQuickGeneralServiceServer> config){
-                        final AeronQuickContext ctx = config.getContext();
-                        final ObjectStringMapper mapper = ctx.getObjectMapper();
-                        final String receiverName = config.getComponentName();
-                        final AeronQuickGeneralServiceServer server = config.getEndpoint();
-                        List<ReceiverBinding> bindings = List.of(
-                            new ReceiverBinding(
-                                "fragmentHandlerCompatible",
-                                aeron -> server::fragmentHandlerCompatible
+                    protected void registerBindings(BindingAppender<SubscriptionMeta> bindings, AeronQuickContext ctx, ObjectStringMapper mapper, String receiverName, AeronQuickGeneralServiceServer server) {
+                                
+                        bindings.addBinding(
+                            ctx.getProperty(receiverName, "fragmentHandlerCompatible", "channel"),
+                            ctx.getIntProperty(receiverName, "fragmentHandlerCompatible", "stream"),
+                            new SubscriptionMeta(
+                                server::fragmentHandlerCompatible, 3
                             )
                         );
-                        for (var b : bindings){
-                            config.addBinding(
-                                ctx.getProperty(receiverName, b.method() ,"channel"),
-                                ctx.getIntProperty(receiverName, b.method(), "stream"),
-                                new SubscriptionMeta(b.handler(), 3)
-                            );
-                        }
                     }
                 }""");
     }

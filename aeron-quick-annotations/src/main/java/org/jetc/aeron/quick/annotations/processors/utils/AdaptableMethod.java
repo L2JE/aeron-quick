@@ -18,6 +18,9 @@ public class AdaptableMethod {
         this.method = method;
     }
 
+    /**
+     * @return the name on the annotation or the name of the method itself
+     */
     public String getPropName() {
         AeronQuickContractEndpoint markData = method.getAnnotation(AeronQuickContractEndpoint.class);
         return (markData != null && !markData.name().isBlank()) ? markData.name() : method.getSimpleName().toString();

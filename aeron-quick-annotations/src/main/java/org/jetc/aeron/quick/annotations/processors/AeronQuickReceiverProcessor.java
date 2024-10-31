@@ -41,6 +41,6 @@ public class AeronQuickReceiverProcessor extends AeronQuickContractProcessor {
 
     @Override
     protected void processContractMethods(TypeElement classToAdapt, List<AdaptableMethod> methodsToAdapt, Annotation targetAnnotation) {
-        creator.adaptReceiver(classToAdapt, methodsToAdapt);
+        creator.adaptReceiver(classToAdapt, methodsToAdapt, (AeronQuickReceiver) targetAnnotation);
     }
 }
