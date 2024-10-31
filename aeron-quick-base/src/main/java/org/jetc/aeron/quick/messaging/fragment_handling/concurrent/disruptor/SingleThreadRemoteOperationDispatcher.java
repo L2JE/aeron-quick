@@ -19,7 +19,7 @@ public class SingleThreadRemoteOperationDispatcher<T> implements FragmentHandler
 
     @Override
     public void onFragment(DirectBuffer buffer, int offset, int length, Header header) {
-        if(currentTurn > handlerPool.length)
+        if(currentTurn >= handlerPool.length)
             currentTurn = 0;
 
         handlerPool[currentTurn++].publishEvent(eventTranslator, buffer, offset, length);

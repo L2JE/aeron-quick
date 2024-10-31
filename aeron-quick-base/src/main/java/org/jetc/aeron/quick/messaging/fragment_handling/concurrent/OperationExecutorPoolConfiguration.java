@@ -25,7 +25,7 @@ public class OperationExecutorPoolConfiguration<T> implements BindingAppender<Co
     protected OperationExecutorPoolFactory<T> poolFactory;
 
     public OperationExecutorPoolConfiguration(AeronQuickContext context, String componentName){
-        String POOL_PROPS_BASE = "threadPool";
+        String POOL_PROPS_BASE = "events.pool";
         idleStrategy = PoolWaitStrategy.fromProp(context.getProperty(componentName, POOL_PROPS_BASE, "idleStrategy"), PoolWaitStrategy.SLEEP);
         idleTimeMillis = context.getIntProperty(componentName, POOL_PROPS_BASE, "idleTimeMillis", 1);
         poolSize = context.getIntProperty(componentName, POOL_PROPS_BASE, "poolSize", 1);
@@ -148,7 +148,9 @@ public class OperationExecutorPoolConfiguration<T> implements BindingAppender<Co
             } catch (Exception ignored){
                 value = defaultValue;
             }
-            return value.equals(PLATFORM) ? Thread::new : Thread.ofVirtual().factory();
+
+            Thread.Builder b = value.equals(PLATFORM) ? Thread.ofPlatform() : Thread.ofVirtual();
+            return b.name("aq_event_pool_worker", 0).factory();
         }
     }
 

@@ -14,7 +14,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.stream.IntStream;
 
 public class MyGeneralSender {
-    private static final int THREAD_COUNT = 10;
+    private static final int THREAD_COUNT = 2;
 
     private static final Logger log = LoggerFactory.getLogger(MyGeneralSender.class);
     private static final AeronQuickFactory factory = AeronQuickFactory.builder().removeAeronDirOnShutdown(true).build();
@@ -36,10 +36,10 @@ public class MyGeneralSender {
 
         for(long it = 0; running.get(); it++) {
             try {
-                if(it % 2 == 0)
-                    mySender.duplicateNumber(it);
-                else
-                    mySender.notifyOperationDone(new ExamplePojo(" iteration-"+it, (int)it), (int)(it +1));
+                //if(it % 2 == 0)
+                //    mySender.duplicateNumber(it);
+                //else
+                    mySender.notifyOperationDone(new ExamplePojo(Thread.currentThread().getName()," iteration-"+it), (int)(it +1));
 
                 log.info("Sent message %s successfully".formatted(it));
             } catch (PublicationOfferFailedException e){

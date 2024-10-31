@@ -9,8 +9,10 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import java.time.Duration;
 
-@AeronQuickReceiver
+@AeronQuickReceiver(concurrent = MyGeneralReceiver.THREAD_COUNT > 1)
 public class MyGeneralReceiver implements AeronGeneralServiceContract {
+    public static final int THREAD_COUNT = 2;
+
     private static final Logger log = LoggerFactory.getLogger(MyGeneralReceiver.class);
     private static final AeronQuickFactory factory = AeronQuickFactory.builder().removeAeronDirOnShutdown(true).build();
     private static AeronQuickReceiverRunner<MyGeneralReceiver> serverRunner;
@@ -43,7 +45,7 @@ public class MyGeneralReceiver implements AeronGeneralServiceContract {
         setMockSysProps(); //Set system properties for channels and streams (just for the example)
         log.warn("STARTING SERVER FROM ");
 
-        serverRunner = factory.getReceiver(new MyGeneralReceiver(), "annotatedReceiver", MyGeneralReceiver::sleepTwoSecondsCfg);
+        serverRunner = factory.getReceiver(new MyGeneralReceiver(), "annotatedReceiver", MyGeneralReceiver::exampleCfg);
         serverRunner.start();
 
         Thread.sleep(Duration.ofMinutes(5));
@@ -51,8 +53,11 @@ public class MyGeneralReceiver implements AeronGeneralServiceContract {
         closeExample();
     }
 
-    private static <T> void sleepTwoSecondsCfg(ReceiverAgentConfiguration<T> conf){
+
+    private static <T> void exampleCfg(ReceiverAgentConfiguration<T> conf){
        conf.setAgentIdleStrategy(new SleepingMillisIdleStrategy(1000 * 2));
+       conf.getEventProcessingPoolConfig()
+               .setPoolSize(THREAD_COUNT);
     }
 
     public static final String GLOBAL_CHANNEL = "aeron:udp?endpoint=localhost:20121";
