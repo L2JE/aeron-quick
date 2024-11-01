@@ -1,0 +1,20 @@
+name: 'Specific Build'
+description: 'Build Annotations/Base javadoc/jar'
+inputs:
+  task:
+    description: ''
+    required: true
+  proj-suffix:
+    description: ''
+    required: true
+runs:
+  using: "composite"
+  steps:
+    - if: ${{ contains(inputs.task, 'build') }}
+      name: Build & Test ${{ inputs.proj-suffix }}
+      shell: bash
+      run: ./gradlew :aeron-quick-${{ inputs.proj-suffix }}:build -x javadocJar -PglobalProjectVersion=${{ env.version_name }}
+    - if: ${{ contains(inputs.task, 'javadocJar') }}
+      name: Javadocs ${{ inputs.proj-suffix }}
+      shell: bash
+      run: ./gradlew :aeron-quick-${{ inputs.proj-suffix }}:javadocJar -PglobalProjectVersion=${{ env.version_name }}

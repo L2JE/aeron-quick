@@ -1,0 +1,4 @@
+# used to generate a project name using a git branch on: .github/workflows/build_and_test.yaml
+branchRef="${1#refs/heads/}"
+versionNumber=$(awk -F "=" '/^globalProjectVersion/ {gsub(/^[ \t]+|[ \t]+$/, "", $2); print $2}' gradle.properties | cut -d'-' -f1)
+echo "${versionNumber}-${branchRef}"
