@@ -29,7 +29,13 @@ allprojects {
 
     tasks.named('test', Test){
         useJUnitPlatform()
-        testLogging { events "passed", "skipped", "failed" }
+        testLogging {
+            events "passed", "skipped", "failed"
+            showExceptions true
+            exceptionFormat "full"
+            showCauses true
+            showStackTraces true
+        }
     }
 
     tasks.named('jar', Jar){
