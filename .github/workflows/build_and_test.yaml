@@ -1,0 +1,66 @@
+name: Java CI with Gradle
+run-name: ${{ github.actor }} - Build And Test
+
+on:
+  pull_request:
+    types:
+      - opened
+      - synchronize
+  push:
+    branches:
+      - 'master'
+
+jobs:
+  build_and_test:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+    - uses: actions/checkout@v4
+    - run: git branch --show-current
+    - name: Set up JDK 21
+      uses: actions/setup-java@v4
+      with:
+        java-version: '21'
+        distribution: 'corretto'
+    - name: Setup Gradle
+      uses: gradle/actions/setup-gradle@v4
+
+    - name: Set Build Version Name
+      run: |
+        echo "version_name=$(./cmd/generateProjectVersion ${{ github.head_ref == '' && github.ref_name || github.head_ref }})" >> $GITHUB_ENV
+
+    - name: Build & Test Base
+      uses: ./.github/specific-build-action
+      with:
+        task: 'build'
+        proj-suffix: 'base'
+    - name: Build & Test Annotations
+      uses: ./.github/specific-build-action
+      with:
+        task: 'build'
+        proj-suffix: 'annotations'
+
+    - name: Javadoc Annotations
+      uses: ./.github/specific-build-action
+      with:
+        task: 'javadocJar'
+        proj-suffix: 'annotations'
+    - name: Javadoc Base
+      uses: ./.github/specific-build-action
+      with:
+        task: 'javadocJar'
+        proj-suffix: 'base'
+
+    - name: Copy Artifacts
+      run: mv aeron-quick-*/build/libs/aeron-quick-*.jar .
+
+    - name: Upload Artifacts
+      uses: actions/upload-artifact@v4
+      with:
+        name: aq-lib-${{ env.version_name }}
+        path: |
+          aeron-quick-base-*.jar
+          aeron-quick-annotations*.jar
+          !*javadoc.jar
+        retention-days: 5

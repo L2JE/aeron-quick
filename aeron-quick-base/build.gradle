@@ -1,17 +1,5 @@
 plugins {
-    id 'java-library'
     id 'java'
-}
-
-java {
-    sourceCompatibility = "$globalJdkVersion"
-    toolchain { languageVersion = JavaLanguageVersion.of(globalJdkVersion) }
-    withJavadocJar()
-}
-version = "$globalProjectVersion"
-
-repositories {
-    mavenCentral()
 }
 
 dependencies {
@@ -21,26 +9,6 @@ dependencies {
     implementation project(':aeron-quick-annotations')
     implementation 'org.slf4j:slf4j-api:2.0.16'
     implementation 'com.lmax:disruptor:4.0.0'
-    testImplementation libs.junit
-    testImplementation libs.junitEngine
-}
-
-tasks.named('test', Test){
-    useJUnitPlatform()
-}
-
-test.testLogging {
-    events "passed", "skipped", "failed"
-}
-
-tasks.named('jar', Jar){
-    manifest {
-        attributes(
-                'Implementation-Title'  : project.name,
-                'Implementation-Version': project.version,
-                'Implementation-Vendor' : globalPackageVendor
-        )
-    }
 }
 
 tasks.register('fatJar', Jar){

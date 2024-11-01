@@ -15,7 +15,7 @@ import java.util.List;
 import java.util.concurrent.ThreadFactory;
 
 /**
- * A pool for {@link ExecutionRequestEvent ExecutionRequestEvents} for the same target class (< T >) that uses Disruptor pattern to enqueue events on each worker thread
+ * A pool for {@link ExecutionRequestEvent ExecutionRequestEvents} for the same target class (T) that uses Disruptor pattern to enqueue events on each worker thread
  */
 public class DisruptorExecutorPool<T> implements OperationExecutorPool {
     private final AeronBindingHolder aeronToDisruptorBindings;
