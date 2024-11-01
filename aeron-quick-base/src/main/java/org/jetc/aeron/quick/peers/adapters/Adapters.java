@@ -13,7 +13,7 @@ public class Adapters {
 
     /**
      * Loads and retrieves an adapter for a class marked with {@link AeronQuickReceiver @AeronQuickServer} which will bind the stream and channels to the corresponding method
-     * @param targetServer to adapt with the compile time generated adapter
+     * @param receiverInstance to adapt with the compile time generated adapter
      * @return the corresponding receiver adapter for the targetServer or null if the class wasn't marked with {@link AeronQuickReceiver @AeronQuickServer}
      * @param <T> Any class marked with {@link AeronQuickReceiver @AeronQuickServer}
      */
@@ -29,7 +29,7 @@ public class Adapters {
     /**
      * Loads and retrieves an adapter for a class (contract class) that has methods marked with {@link AeronQuickContractEndpoint @QuickContractEndpoint} which will bind the stream and channels to the corresponding method
      * @param <T> Any class marked {@link org.jetc.aeron.quick.annotations.AeronQuickContract @AeronQuickContract} or having at least one method marked with {@link AeronQuickContractEndpoint @QuickContractEndpoint}
-     * @param contract to adapt with the compile time generated adapter
+     * @param senderClass to adapt with the compile time generated adapter
      * @return the corresponding sender adapter for the target contract or null if the class is not a valid contract
      */
     @SuppressWarnings("unchecked")

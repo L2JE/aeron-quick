@@ -1,2 +1,44 @@
 group = 'org.jetc.aeron'
 version = "$globalProjectVersion"
+
+allprojects {
+    if(!(name.contains('aeron-quick-annotations') || name.contains('aeron-quick-base')))
+        return
+
+    apply plugin: 'java-library'
+    group = 'org.jetc.aeron'
+    version = "$globalProjectVersion"
+
+    repositories {
+        mavenCentral()
+    }
+
+    java {
+        sourceCompatibility = "$globalJdkVersion"
+        toolchain { languageVersion = JavaLanguageVersion.of(globalJdkVersion) }
+        withJavadocJar()
+    }
+
+    javadoc.options.addStringOption('Xdoclint:none', '-quiet')
+
+
+    dependencies {
+        testImplementation libs.junit
+        testImplementation libs.junitEngine
+    }
+
+    tasks.named('test', Test){
+        useJUnitPlatform()
+        testLogging { events "passed", "skipped", "failed" }
+    }
+
+    tasks.named('jar', Jar){
+        manifest {
+            attributes(
+                    'Implementation-Title'  : project.name,
+                    'Implementation-Version': globalProjectVersion,
+                    'Implementation-Vendor' : globalPackageVendor
+            )
+        }
+    }
+}
