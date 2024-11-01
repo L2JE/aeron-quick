@@ -1,7 +1,14 @@
 name: Java CI with Gradle
 run-name: ${{ github.actor }} - Build And Test
 
-on: [push]
+on:
+  pull_request:
+    types:
+      - opened
+      - synchronize
+  push:
+    branches:
+      - 'master'
 
 jobs:
   build_and_test:
